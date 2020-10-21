@@ -45,6 +45,13 @@
           class="handle-add mr10"
           @click="handleAdd"
         >新增</el-button>
+
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          class="handle-add mr10"
+          @click="exportExcel()"
+        >导出</el-button>
       </div>
    <!-- ============   表格table begin  =================-->
       <el-table
@@ -358,6 +365,13 @@
         this.chapter = {};
         this.editVisible = true;
       },
+
+      exportExcel(){
+        let a = document.createElement('a')
+        a.href = `http://localhost:9001/admin/chapters/test` // 这里的请求方式为get，如果需要认证，接口上需要带上token
+        a.click()
+      },
+
       /**
        *  点击保存 （新增/修改）
        */

@@ -134,6 +134,7 @@
                             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
                             <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
                             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                            <el-progress :percentage="uploadProcess"></el-progress>
                           </el-upload>
                         </el-form-item>
                         <el-form-item label="时长">
@@ -203,7 +204,8 @@
          searchButtonDisabled: false,
          saveButtonDisabled: false
       },
-       video: {}
+       video: {},
+      uploadProcess: 0,
     };
     },
     created() {
@@ -465,7 +467,7 @@
       handlePreview(file) {
         console.log(file);
       },
-      upload: function (item) {
+      upload(item){
         let file = item.file;
         let fileFullName = file.name;
         let lastModified = file.lastModified;
@@ -480,33 +482,40 @@
         // 转换为md5,作为文件唯一标识
         let fileKey = this.$md5(strKey);
 
-        let shardIndex = 2;
+        // 分片大小
         let shardSize = 10 * 1024 * 1024;
-        // 当前分片起始位置
-        let start = shardIndex * shardSize;
-        // 当前分片结束位置
-        let end = Math.min(file.size, start + shardSize);
-        // 从文件中截取当前的分片数据
-        let fileShard = file.slice(start, end);
+        // 文件总分片数
         let shardCount = fileSize % shardSize == 0 ? Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
+        // 去后台获取该文件的分片下标
+        let nowShardIndex = this.getShardIndex(fileKey);
 
-        console.log("shardCount={}",shardCount);
+        if(nowShardIndex == '' && nowShardIndex == undefined && nowShardIndex == null){
+          nowShardIndex = 1;
+        }
+        //如果该文件已存在，直接提示文件上传成功，返回
+        if(nowShardIndex == shardCount){
+          this.uploadProcess = 50;
+          setTimeout(() => this.uploadProcess = 70,500);
+          setTimeout(() => this.uploadProcess = 90,500);
+          setTimeout(() => this.uploadProcess = 100,500);
+          this.$message.success("视频上传成功");
+          return;
+        }
 
-        let formDate = new FormData();
-        formDate.append("fileShard", fileShard);
-        formDate.append("suffix", suffix);
-        formDate.append("fileKey", fileKey);
-        formDate.append("fileSize", fileSize);
-        formDate.append("shardIndex",shardIndex);
-        formDate.append("shardSize",shardSize);
-        formDate.append("shardCount",shardCount);
-
-        this.sendFileShard(file,1,10 * 1024 * 1024);
-
+        // 从当前分片开始上传
+        this.sendFileShard(file,nowShardIndex,shardSize);
       },
 
+      /**
+       * 参数
+       * file:文件对象
+       * shardIndex:分片下标
+       * shardSize:分片大小
+       *
+       *对文件进行分割，向后台发送文件分片
+       *
+       */
       sendFileShard(file,shardIndex,shardSize){
-
         let fileFullName = file.name;
         let lastModified = file.lastModified;
         let lastModifiedDate = file.lastModifiedDate;
@@ -520,45 +529,93 @@
         // 转换为md5,作为文件唯一标识
         let fileKey = this.$md5(strKey);
 
-
-        // 当前分片起始位置
-        let start = shardIndex * shardSize;
-        // 当前分片结束位置
-        let end = Math.min(file.size, start + shardSize);
-        // 从文件中截取当前的分片数据
-        let fileShard = file.slice(start, end);
         let shardCount = fileSize % shardSize == 0 ? Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
 
-        // 数据表单
-        let formDate = new FormData();
-        formDate.append("fileShard", fileShard);
-        formDate.append("suffix", suffix);
-        formDate.append("fileKey", fileKey);
-        formDate.append("fileSize", fileSize);
-        formDate.append("shardIndex",shardIndex);
-        formDate.append("shardSize",shardSize);
-        formDate.append("shardCount",shardCount);
-        // 向发送请求
-        this.$axios.post('http://localhost:9002/file/upload', formDate)
-          .then(respone => {
-            console.log(respone.data);
-            // 获取到目前的分片下标
-            let nowShardIndex = this.getFileShardIndex(fileKey);
-          }).catch(error => {
-          this.$message.error('上传文件失败！');
-        });
+          // 分片发请求
+          let fileShard = this.getFileShard(file, shardIndex,shardSize);
+          // 数据表单
+          let formDate = new FormData();
+          formDate.append("fileShard", fileShard);
+          formDate.append("suffix", suffix);
+          formDate.append("fileKey", fileKey);
+          formDate.append("fileSize", fileSize);
+          formDate.append("shardIndex",shardIndex);
+          formDate.append("shardSize",shardSize);
+          formDate.append("shardCount",shardCount);
+
+          let _this = this;
+
+          let process = 0;
+          // 向发送请求
+          this.$axios.post('http://localhost:9002/file/upload', formDate,{
+            onUploadProgress:function(progressEvent){
+              process = (progressEvent.loaded / (progressEvent.total *  shardCount)) * 100;
+              // 原来的，易理解，但是在运算中精度损失，上传完最后 99.99%
+             // _this.uploadProcess = 1/shardCount * 100 * (shardIndex - 1) + (progressEvent.loaded / (progressEvent.total *  shardCount)) * 100;
+              // 进行通分母，整理后，最后不会精度损失
+              _this.uploadProcess =  100 * (progressEvent.total * (shardIndex - 1) + progressEvent.loaded) / (progressEvent.total *  shardCount) | 0;
+            }
+          })
+            .then(respone => {
+              if(respone.data.success){
+               // _this.uploadProcess = _this.uploadProcess + process;
+                //如果还没到最后一个，发送下一个分片
+                if(shardIndex < shardCount) {
+                  this.sendFileShard(file, shardIndex + 1, shardSize);
+                }
+              }
+            }).catch(error => {
+            this.$message.error('上传文件失败！');
+          });
 
       },
 
-      getFileShardIndex(key){
+      /**
+       * 获取文件分片
+       * @param file 文件对象
+       * @param shardIndex 分片下标
+       * @param shardSize 分片大小
+       */
+      getFileShard(file, shardIndex, shardSize){
+
+        if(shardIndex <= 0){
+          shardIndex = 0;
+        }
+        let fileSize = file.size;
+        // 获取总分片数
+        let shardCount = fileSize % shardSize == 0 ?
+          Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
+
+        if(shardIndex > shardIndex){
+          shardIndex = shardCount;
+        }
+
+        // 当前分片起始位置
+        let start = (shardIndex - 1) * shardSize;
+        // 当前分片结束位置d
+        let end = Math.min(file.size, start + shardSize);
+        // 从文件中截取当前的分片数据
+        let fileShard = file.slice(start, end);
+        return fileShard;
+      },
+
+      /**
+       * 获取开始上传的文件分片下标
+       * 如果后台不存在该文件，返回1
+       * @param key
+       * @returns {Promise<AxiosResponse<any>>}
+       */
+      getShardIndex(key){
         let nowShardIndex = 1;
-        this.$axios.get('http://localhost:9002/file/key/' + key + '/shardIndex')
+        nowShardIndex =  this.$axios.get('http://localhost:9002/file/key/' + key + '/shardIndex')
           .then(rep => {
             if(rep.data.success){
-              console.log(rep.data.data);
-              nowShardIndex  = rep.data.data;
+              let shardIndex  = rep.data.data;
+              return shardIndex;
+            }else {
+              return 1;
             }
-        })
+        });
         return nowShardIndex;
       },
 
