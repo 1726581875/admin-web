@@ -48,7 +48,7 @@
 
         <el-button
           type="primary"
-          icon="el-icon-plus"
+          icon="el-icon-download"
           class="handle-add mr10"
           @click="exportExcel()"
         >导出</el-button>
@@ -368,7 +368,8 @@
 
       exportExcel(){
         let a = document.createElement('a')
-        a.href = `http://localhost:9001/admin/chapters/test` // 这里的请求方式为get，如果需要认证，接口上需要带上token
+        // 这里的请求方式为get，如果需要认证，接口上需要带上token
+        a.href = `http://localhost:9001/admin/chapters/export?`+ this.$qs.stringify(this.queryParam);
         a.click()
       },
 
@@ -399,7 +400,7 @@
             }
         }).catch(err => {
           this.$message.error('保存操作发生系统内部错误');
-          console.error("error = " + err)
+          console.error("error = " + err);
         })
 
       },
