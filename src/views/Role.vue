@@ -63,7 +63,6 @@
                         <el-table-column prop="id" label="角色ID" width="55" align="center"/>
                         <el-table-column prop="name" label="角色名称"/>
                         <el-table-column prop="createTime" label="创建时间"/>
-                        <el-table-column prop="updateTime" label="修改时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -101,17 +100,18 @@
         <!-- 【修改/插入】 弹出框   -->
         <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
             <el-form ref="role" :model="role" label-width="70px">
-                        <el-form-item label="角色名称">
-                            <el-input v-model="role.name"></el-input>
-                        </el-form-item>
+                <el-form-item label="角色名称">
+                    <el-input v-model="role.name"></el-input>
+                </el-form-item>
 
                 <el-form-item label="菜单权限">
                 <el-tree
-                  :data="menu"
+                  :data="menuTree"
                   show-checkbox
                   node-key="id"
-                  :default-expanded-keys="[2, 3]"
-                  :default-checked-keys="[5]"
+                  ref="tree"
+                  :default-expanded-keys="expandedMenu"
+                  :default-checked-keys="selectedMenu"
                   :props="defaultProps">
                 </el-tree>
                 </el-form-item>
@@ -165,34 +165,11 @@
               searchButtonDisabled: false,
               saveButtonDisabled: false
           },
-          menu: [/*{
-              id: 1,
-              label: '课程管理',
-              children: [{
-                  id: 4,
-                  label: '二级 1-1',
-              }]
-          }, {
-              id: 2,
-              label: '系统管理',
-              children: [{
-                  id: 5,
-                  label: '二级 2-1'
-              }, {
-                  id: 6,
-                  label: '二级 2-2'
-              }]
-          }, {
-              id: 3,
-              label: '日志管理',
-              children: [{
-                  id: 7,
-                  label: '二级 3-1'
-              }, {
-                  id: 8,
-                  label: '二级 3-2'
-              }]
-          }*/],
+
+          //权限菜单树
+          menuTree: [],
+          selectedMenu:[],
+          expandedMenu:[],
           defaultProps: {
               children: 'children',
               label: 'label'
@@ -375,17 +352,56 @@
         this.multipleSelection = [];
       },
 
-      /**
-       * 点击编辑按钮触发，展示编辑框
-       */
-      handleEdit(index, row) {
-        this.dialogTitle = '修改';
-        //为对象分配一个新地址，改变也不影响原来的值
-        let newRole = JSON.parse(JSON.stringify(row));
-        this.role = newRole;
-        // 展示编辑框
-        this.editVisible = true;
-      },
+        /**
+         * 点击编辑按钮触发，展示编辑框
+         */
+        handleEdit: function (index, row) {
+            //初始化展开和选中节点
+            this.menuTree = [];
+            this.selectedMenu = [];
+            this.expandedMenu = [];
+
+            this.dialogTitle = '修改';
+            //为对象分配一个新地址，改变也不影响原来的值
+            let newRole = JSON.parse(JSON.stringify(row));
+            this.role = newRole;
+
+
+            //获取菜单权限树
+            this.$axios.get('http://localhost:9001/admin/menu/tree')
+              .then(resp => {
+                  if (resp.data.success) {
+                      this.menuTree = resp.data.data.children;
+                  }
+              });
+
+            //查找默认该角色的权限
+            this.$axios.get('http://localhost:9001/admin/roles/' + newRole.id)
+              .then(resp => {
+                  if (resp.data.success) {
+                     /* let respMenuIds = resp.data.data.menuIdList;
+                      let firstMenuIds = [];
+                      let leafNodeIds = [];*/
+
+                    /*  // 找到菜单树第一层要展开的节点Id（只展开第一级）
+                      respMenuIds.forEach(id => {
+                          if (id < 10) {
+                              firstMenuIds.push(id);
+                          }
+                          if(halfCheckedKey.indexOf(id) == -1){
+                              leafNodeIds.push(id);
+                          }
+                      });*/
+
+                      // 设置树的选中、展开节点
+                      this.expandedMenu = resp.data.data.menuIdList;
+                      this.selectedMenu = resp.data.data.leafNodeIdList;
+                  }
+              });
+
+            // 展示编辑框
+            this.editVisible = true;
+        },
 
       /**
        *  点击新增，展示新增框
@@ -393,13 +409,17 @@
       handleAdd() {
         this.dialogTitle = '新增';
         this.role = {};
-        this.menu = [];
+        //初始化展开和选中节点
+          this.menuTree = [];
+        this.selectedMenu = [];
+        this.expandedMenu = [];
+        // 查询菜单权限树
         this.$axios.get('http://localhost:9001/admin/menu/tree')
           .then(resp => {
               if (resp.data.success){
-                  this.menu = resp.data.data.children;
+                  this.menuTree = resp.data.data.children;
               }
-          })
+          });
         this.editVisible = true;
       },
 
@@ -418,6 +438,10 @@
         //2、参数校验
         // ...
 
+          // 获取选中的树节点
+         let selectedNode =  this.$refs.tree.getCheckedKeys().concat(this.$refs.tree.getHalfCheckedKeys());
+        this.role.menuIdList = selectedNode;
+        console.log(this.role);
         this.editVisible = false;
         //3、发请求
         this.$axios.post('http://localhost:9001/admin/roles/role', this.role)
