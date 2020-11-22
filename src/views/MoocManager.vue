@@ -66,10 +66,20 @@
                         <el-table-column prop="id" label="主键" width="55" align="center"/>
                         <el-table-column prop="name" label="名字"/>
                         <el-table-column prop="account" label="登录账号"/>
-                        <el-table-column prop="password" label="密码"/>
-                        <el-table-column prop="status" label="用户状态"/>
+                        <el-table-column label="用户状态">
+                          <template slot-scope="scope">
+                          <el-switch
+                          style="display: block"
+                          v-model="scope.row.status"
+                          active-color="#13ce66"
+                          inactive-color="#ff4949"
+                          active-text="启用"
+                          inactive-text="禁用"
+                          @change="handleEnable($event,scope.row.id,true)">
+                          </el-switch>
+                          </template>
+                        </el-table-column>
                         <el-table-column prop="createTime" label="创建时间"/>
-                        <el-table-column prop="updateTime" label="修改时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -113,17 +123,36 @@
                         <el-form-item label="登录账号">
                             <el-input v-model="moocManager.account"></el-input>
                         </el-form-item>
-                        <el-form-item label="密码">
-                            <el-input v-model="moocManager.password"></el-input>
-                        </el-form-item>
                         <el-form-item label="用户状态">
-                            <el-input v-model="moocManager.status"></el-input>
+                            <el-switch
+                              style="display: block"
+                              v-model="moocManager.status"
+                              active-color="#13ce66"
+                              inactive-color="#ff4949"
+                              active-text="启用"
+                              inactive-text="禁用"
+                              @change="handleEnable($event,moocManager.id,false)">
+                            </el-switch>
                         </el-form-item>
-                        <el-form-item label="创建时间">
-                            <el-input v-model="moocManager.createTime"></el-input>
-                        </el-form-item>
-                        <el-form-item label="修改时间">
-                            <el-input v-model="moocManager.updateTime"></el-input>
+                        <el-form-item label="角色权限">
+                          <el-tag
+                            v-for="role in roles"
+                            :key="role.name"
+                             closable
+                             @close="handleRoleTagClose(role)"
+                             type="success">
+                            {{role.name}}
+                          </el-tag>
+
+                          &nbsp;&nbsp;&nbsp;&nbsp;
+                          <el-button
+                            icon="el-icon-plus"
+                            size="small"
+                            @click="handleAddRoleButton">
+                          </el-button>
+
+
+
                         </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -180,14 +209,54 @@
          searchButtonDisabled: false,
          saveButtonDisabled: false
       },
+        //角色列表
+        roles: []
+      };
 
-    };
     },
     created() {
       this.list();
     },
     methods: {
 
+      handleAddRoleButton(){
+        console.log("11111");
+        this.$axios.get('http://localhost:9001/admin/roles/all')
+        .then(resp => {
+          let respDate = resp.data;
+          if(respDate.success){
+            console.log(respDate.data);
+          }
+        })
+
+      },
+
+      handleRoleTagClose(role){
+        this.roles.splice(this.roles.indexOf(role), 1);
+        console.log("点击关闭了 " + this.roles);
+      },
+
+
+      /**
+       * enable当前状态启用还是禁用，当前用户id，isUpdate是否点击就更新
+       * 点击禁用/启用
+       */
+      handleEnable(enable, id, isUpdate) {
+        console.log("enable=" + enable + ", id=" + id);
+
+        if (isUpdate) {
+          let manager = {
+            status: enable ? 1 : 0,
+            id: id
+          }
+          this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', manager)
+            .then(resp => {
+              if (resp.data.success) {
+                console.log(resp.data.success);
+              }
+            });
+        }
+      },
       //初始化查询条件
       resetQueryParam() {
         this.queryParam = {};
@@ -367,6 +436,7 @@
         //为对象分配一个新地址，改变也不影响原来的值
         let newMoocManager = JSON.parse(JSON.stringify(row));
         this.moocManager = newMoocManager;
+        this.roles = newMoocManager.roleList;
         // 展示编辑框
         this.editVisible = true;
       },
@@ -396,8 +466,11 @@
         // ...
 
         this.editVisible = false;
+
+        let paramManager = this.moocManager;
+        paramManager.status = paramManager.status ? 1 : 0;
         //3、发请求
-        this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', this.moocManager)
+        this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', paramManager)
           .then(res => {
             if (res.data.success) {
               this.$message.success('保存成功');

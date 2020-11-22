@@ -13,19 +13,20 @@
 </template>
 
 <script>
+  import { encrypt } from '@/util/rsaEncrypt'
   export default {
     name: "Login",
     data() {
       return {
         user : {},
-        vcUrl: 'http://localhost:10000/code/image?time='+new Date(),
+        vcUrl: 'http://localhost:10000/mooc/admin/code/image?time='+new Date(),
       }
     },
     methods: {
       login(){
         let formDate = new FormData();
         formDate.append("username",this.user.username);
-        formDate.append("password",this.user.password);
+        formDate.append("password",encrypt(this.user.password));
         formDate.append("code",this.user.code);
         this.$axios.post('http://localhost:10000/mooc/admin/login',formDate)
           .then(resp => {
@@ -42,7 +43,7 @@
           })
       },
       updateVerificationCode() {
-        this.vcUrl = 'http://localhost:10000/code/image?time='+new Date();
+        this.vcUrl = 'http://localhost:10000/mooc/admin/code/image?time='+new Date();
       },
 
     }
