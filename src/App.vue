@@ -5,6 +5,7 @@
 </template>
 
 <script>
+
   export default {
     methods: {
       handleOpen(key, keyPath) {
@@ -18,16 +19,7 @@
 </script>
 
 <style>
-  #nav {
-    padding: 30px;
-  }
-
-  #nav a {
-    font-weight: bold;
-    color: #2c3e50;
-  }
-
-  #nav a.router-link-exact-active {
-    color: #42b983;
-  }
+  @import "./assets/css/main.css";
+  @import "./assets/css/color-dark.css";     /*深色主题*/
+  /*@import "./assets/css/theme-green/color-green.css";   浅绿色主题*/
 </style>

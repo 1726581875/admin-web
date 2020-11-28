@@ -38,13 +38,14 @@
 </template>
 
 <script>
-  import { encrypt } from '@/util/rsaEncrypt'
+
+  import { encrypt } from '@/utils/rsaEncrypt'
   export default {
     data: function() {
       return {
         param: {
           username: 'admin',
-          password: '123123',
+          password: 'root',
           code:''
         },
         rules: {
@@ -52,7 +53,7 @@
           password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
           code: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
         },
-        vcUrl: 'http://localhost:10000/mooc/admin/code/image?time='+new Date(),
+        vcUrl: this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date(),
 
       };
     },
@@ -63,7 +64,7 @@
             let loginParam =JSON.parse(JSON.stringify(this.param));
             //密码加密传输
             loginParam.password = encrypt(this.param.password);
-            this.$axios.post('http://localhost:10000/mooc/admin/login',loginParam)
+            this.$axios.post(this.$requestBaseUrl.authorize+'/mooc/admin/login',loginParam)
               .then(resp => {
                 console.log(resp.data);
                 let respResult = resp.data;
@@ -71,10 +72,10 @@
                   // let path = this.$route.query.redirect;
                   // this.$router.replace((path == '/' || path == undefined) ? '/about' : path);
                   console.log("登录成功...")
-                  localStorage.setItem('ms_username', this.param.username);
-                //  localStorage.removeItem('ms_username');
                   localStorage.setItem('ms_username', '1111111111');
                   localStorage.setItem('token',respResult.data.token);
+                  localStorage.setItem('menuList',JSON.stringify(respResult.data.menuList));
+                  localStorage.setItem('account',this.param.username);
                   this.$router.push('/');
                 }else {
                   this.$message.error(respResult.msg);
@@ -89,7 +90,7 @@
         });
       },
       updateVerificationCode() {
-        this.vcUrl = 'http://localhost:10000/mooc/admin/code/image?time='+new Date();
+        this.vcUrl = this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date();
       },
 
     },

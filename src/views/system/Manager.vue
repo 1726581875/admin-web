@@ -1,174 +1,178 @@
 <template>
-    <div>
-        <div class="container">
-            <div class="handle-box">
-                <el-button
-                        type="primary"
-                        icon="el-icon-refresh-right"
-                        class="handle-del mr10"
-                        :loading="isLoading"
-                        @click="reloadList"
-                >刷新
-                </el-button>
-                <el-button
-                        type="danger"
-                        icon="el-icon-delete"
-                        class="handle-del mr10"
-                        @click="deleteSelected"
-                        :disabled="buttonStatus.deleteMultipleButtonDisabled"
-                >批量删除
-                </el-button>
-                <el-select v-model="selectValue" placeholder="查询条件" class="handle-select mr10">
-                                            <el-option key="0" label="主键" value="id"></el-option>
-                        <el-option key="1" label="名字" value="name"></el-option>
-                        <el-option key="2" label="登录账号" value="account"></el-option>
-                        <el-option key="3" label="密码" value="password"></el-option>
-                        <el-option key="4" label="用户状态" value="status"></el-option>
-                </el-select>
-                <!--  查找输入框 -->
-                <el-input
-                        v-model="inputVale"
-                        :placeholder="selectValue? '请输入' + nameMap[selectValue]  : '请输入查询内容'"
-                        class="handle-input mr10"></el-input>
-                <el-button
-                        type="primary"
-                        icon="el-icon-search"
-                        :disabled="buttonStatus.searchButtonDisabled"
-                        @click="handleSearch">搜索
-                </el-button>
+  <div>
+    <div class="container">
+      <div class="handle-box">
+        <el-button
+          icon="el-icon-refresh-right"
+          class="handle-del mr10"
+          size="small"
+          :loading="isLoading"
+          @click="reloadList"
+        >刷新
+        </el-button>
+        <el-button
+          icon="el-icon-delete"
+          class="handle-del mr10"
+          size="small"
+          @click="deleteSelected"
+          :disabled="buttonStatus.deleteMultipleButtonDisabled"
+        >批量删除
+        </el-button>
+        <!--  查找输入框 -->
+        <el-input
+          size="small"
+          v-model="inputVale"
+          placeholder="请输入名字或者账号"
+          class="handle-input mr10"></el-input>
+        <el-button
+          size="small"
+          icon="el-icon-search"
+          :disabled="buttonStatus.searchButtonDisabled"
+          @click="handleSearch">搜索
+        </el-button>
 
-                <el-button
-                        type="primary"
-                        icon="el-icon-plus"
-                        class="handle-add mr10"
-                        @click="handleAdd"
-                >新增
-                </el-button>
-            </div>
-            <!-- ============   表格table begin  =================-->
-            <el-table
-                    :data="moocManagerList"
-                    border
-                    class="table"
-                    ref="multipleTable"
-                    header-cell-class-name="table-header"
-                    :default-sort="{prop: 'date', order: 'descending'}"
-                    @selection-change="handleSelectionChange"
-            >
-                <el-table-column type="selection" width="55" align="center"/>
-                        <el-table-column prop="id" label="主键" width="55" align="center"/>
-                        <el-table-column prop="name" label="名字"/>
-                        <el-table-column prop="account" label="登录账号"/>
-                        <el-table-column label="用户状态">
-                          <template slot-scope="scope">
-                          <el-switch
-                          style="display: block"
-                          v-model="scope.row.status"
-                          active-color="#13ce66"
-                          inactive-color="#ff4949"
-                          active-text="启用"
-                          inactive-text="禁用"
-                          @change="handleEnable($event,scope.row.id,true)">
-                          </el-switch>
-                          </template>
-                        </el-table-column>
-                        <el-table-column prop="createTime" label="创建时间"/>
-                <el-table-column label="操作" width="180" align="center">
-                    <template slot-scope="scope">
-                        <el-button
-                                type="text"
-                                icon="el-icon-edit"
-                                @click="handleEdit(scope.$index, scope.row)"
-                        >编辑
-                        </el-button>
-                        <el-button
-                                type="text"
-                                icon="el-icon-delete"
-                                class="red"
-                                @click="handleDelete(scope.$index, scope.row.id)"
-                        >删除
-                        </el-button>
-                    </template>
-                </el-table-column>
+        <el-button
+          icon="el-icon-plus"
+          class="handle-add mr10"
+          size="small"
+          @click="handleAdd"
+        >新增
+        </el-button>
+      </div>
 
-            </el-table>
-            <!-- =========表格table  end============ -->
+      <div style="background: #fff;">
+        <!-- ============   表格table begin  =================-->
+        <el-table
+          :data="moocManagerList"
+          border
+          class="table"
+          size="mini"
+          height="427px"
+          :row-style="{height:'12px'}"
+          :cell-style="{padding:'3px 1px'}"
+          ref="multipleTable"
+          header-cell-class-name="table-header"
+          :default-sort="{prop: 'date', order: 'descending'}"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" width="55" align="center"/>
+          <el-table-column prop="id" label="主键" width="75" align="center"/>
+          <el-table-column prop="name" label="管理员名字"/>
+          <el-table-column prop="account" label="账号"/>
+          <el-table-column label="禁用|启用">
+            <template slot-scope="scope">
+              <el-switch
+                style="display: block"
+                v-model="scope.row.status"
+                active-color="#409EFF"
+                inactive-color="#C0C4CC"
+                @change="handleEnable($event,scope.row.id,true)">
+              </el-switch>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间"/>
+          <el-table-column label="操作" width="180" align="center">
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                size="small"
+                icon="el-icon-edit"
+                @click="handleEdit(scope.$index, scope.row)"
+              >编辑
+              </el-button>
+              <el-button
+                type="text"
+                size="small"
+                icon="el-icon-delete"
+                class="#E6A23C"
+                @click="handleDelete(scope.$index, scope.row.id)"
+              >删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-            <!-- 分页组件 -->
-            <div class="pagination">
-                <el-pagination
-                        background
-                        layout="total, prev, pager, next"
-                        :current-page="queryParam.pageIndex"
-                        :page-size="queryParam.pageSize"
-                        :page-count="pageCount"
-                        @current-change="handlePageChange"
-                ></el-pagination>
-            </div>
+        <!-- =========表格table  end============ -->
+
+        <!-- 分页组件 -->
+        <div class="pagination">
+          <el-pagination
+            background
+            layout="total, prev, pager, next"
+            :current-page="queryParam.pageIndex"
+            :page-size="queryParam.pageSize"
+            :page-count="pageCount"
+            @current-change="handlePageChange"
+          ></el-pagination>
         </div>
+        <div style="margin-bottom: 10px"></div>
+      </div>
+    </div>
+    <!-- 【修改/插入】 弹出框   -->
+    <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
+      <el-form ref="moocManager" :model="moocManager" label-width="70px">
 
-        <!-- 【修改/插入】 弹出框   -->
-        <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
-            <el-form ref="moocManager" :model="moocManager" label-width="70px">
-                        <el-form-item label="名字">
-                            <el-input v-model="moocManager.name"></el-input>
-                        </el-form-item>
-                        <el-form-item label="登录账号">
-                            <el-input v-model="moocManager.account"></el-input>
-                        </el-form-item>
-                        <el-form-item label="用户状态">
-                            <el-switch
-                              style="display: block"
-                              v-model="moocManager.status"
-                              active-color="#13ce66"
-                              inactive-color="#ff4949"
-                              active-text="启用"
-                              inactive-text="禁用"
-                              @change="handleEnable($event,moocManager.id,false)">
-                            </el-switch>
-                        </el-form-item>
-                        <el-form-item label="角色权限">
-                          <el-tag
-                            v-for="role in roles"
-                            :key="role.name"
-                             closable
-                             @close="handleRoleTagClose(role)"
-                             type="success">
-                            {{role.name}}
-                          </el-tag>
-
-                          &nbsp;&nbsp;&nbsp;&nbsp;
-                          <el-button
-                            icon="el-icon-plus"
-                            size="small"
-                            @click="handleAddRoleButton">
-                          </el-button>
-
-
-
-                        </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
+        <el-form-item label= "名字">
+          <el-input v-model="moocManager.name"></el-input>
+        </el-form-item>
+        <el-form-item label="账号">
+          <el-input v-model="moocManager.account" :disabled="dialogTitle=='修改'"></el-input>
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="moocManager.password"></el-input>
+        </el-form-item>
+        <div v-if="dialogTitle=='新增'">
+          <el-form-item label="确认密码">
+            <el-input v-model="moocManager.confirmPassword"></el-input>
+          </el-form-item>
+        </div>
+        <el-form-item label="用户状态">
+          <el-switch
+            style="display: block"
+            v-model="moocManager.status"
+            active-color="#409EFF"
+            inactive-color="#C0C4CC"
+            active-text="启用"
+            inactive-text="禁用"
+            @change="handleEnable($event,moocManager.id,false)">
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="角色权限">
+          <el-tag
+            v-for="role in roles"
+            :key="role.name"
+            closable
+            @close="handleRoleTagClose(role)"
+            type="success">
+            {{role.name}}
+          </el-tag>&nbsp;&nbsp;&nbsp;&nbsp;
+          <el-button
+            icon="el-icon-plus"
+            size="small"
+            @click="handleAddRoleButton">
+          </el-button>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
                 <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="save">确 定</el-button>
             </span>
-        </el-dialog>
-
-    </div>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
   export default {
-    name: 'moocManager',
+    name: 'Manager',
     data() {
       return {
         /* 分页查询条件 */
         queryParam: {
-        id: null,
-        name: null,
-        account: null,
-        password: null,
-        status: null,
+          id: null,
+          name: null,
+          account: null,
+          password: null,
+          status: null,
           pageIndex: 1,
           pageSize: 10
         },
@@ -180,51 +184,41 @@
         /* 控制弹出框 */
         editVisible: false,
         dialogTitle: '',
-        moocManager: {},
+        moocManager: {
+          status: true,
+        },
         //刷新 转动
         isLoading: false,
         /*搜索框，选择框*/
         inputVale: '',
-        selectValue: 'id',
-        //下拉选择框映射
-        nameMap: {
-        id:'主键',
-        name:'名字',
-        account:'登录账号',
-        password:'密码',
-        status:'用户状态',
-        createTime:'创建时间',
-        updateTime:'修改时间',
-      },
-      /* 控制按钮状态 */
-      buttonStatus: {
-        deleteMultipleButtonDisabled: false,
-         searchButtonDisabled: false,
-         saveButtonDisabled: false
-      },
+        /* 控制按钮状态 */
+        buttonStatus: {
+          deleteMultipleButtonDisabled: false,
+          searchButtonDisabled: false,
+          saveButtonDisabled: false
+        },
         //角色列表
         roles: []
       };
-
     },
     created() {
       this.list();
     },
     methods: {
 
-      handleAddRoleButton(){
+      handleAddRoleButton() {
         console.log("11111");
         this.$axios.get('http://localhost:9001/admin/roles/all')
-        .then(resp => {
-          let respDate = resp.data;
-          if(respDate.success){
-            console.log(respDate.data);
-          }
-        })
+          .then(resp => {
+            let respDate = resp.data;
+            if (respDate.success) {
+              console.log(respDate.data);
+            }
+          })
 
       },
 
-      handleRoleTagClose(role){
+      handleRoleTagClose(role) {
         this.roles.splice(this.roles.indexOf(role), 1);
         console.log("点击关闭了 " + this.roles);
       },
@@ -342,7 +336,7 @@
       /**
        * 根据id删除
        */
-      deleteById(id){
+      deleteById(id) {
         this.$axios.delete("http://localhost:9001/admin/moocManagers/" + id)
           .then(res => {
             res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
@@ -439,7 +433,7 @@
        */
       handleAdd() {
         this.dialogTitle = '新增';
-        this.moocManager = {};
+        this.moocManager = {status: true};
         this.editVisible = true;
       },
 
@@ -489,41 +483,41 @@
 </script>
 
 <style scoped>
-    .handle-box {
-        margin-bottom: 20px;
-    }
+  .handle-box {
+    margin-bottom: 20px;
+  }
 
-    .handle-select {
-        width: 120px;
-    }
+  .handle-select {
+    width: 120px;
+  }
 
-    .handle-input {
-        width: 300px;
-        display: inline-block;
-    }
+  .handle-input {
+    width: 300px;
+    display: inline-block;
+  }
 
-    .table {
-        width: 100%;
-        font-size: 14px;
-    }
+  .table {
+    width: 100%;
+    font-size: 14px;
+  }
 
-    .red {
-        color: #ff0000;
-    }
+  .red {
+    color: #ff0000;
+  }
 
-    .mr10 {
-        margin-right: 10px;
-    }
+  .mr10 {
+    margin-right: 10px;
+  }
 
-    .table-td-thumb {
-        display: block;
-        margin: auto;
-        width: 40px;
-        height: 40px;
-    }
+  .table-td-thumb {
+    display: block;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+  }
 
-    .pagination {
-        margin: 20px 0;
-        text-align: right;
-    }
+  .pagination {
+    margin: 20px 0 20px 0;
+    text-align: right;
+  }
 </style>

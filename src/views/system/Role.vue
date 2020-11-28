@@ -1,102 +1,101 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <div class="handle-box">
                 <el-button
-                        type="primary"
                         icon="el-icon-refresh-right"
                         class="handle-del mr10"
+                        size="small"
                         :loading="isLoading"
                         @click="reloadList"
                 >刷新
                 </el-button>
                 <el-button
-                        type="danger"
                         icon="el-icon-delete"
                         class="handle-del mr10"
+                        size="small"
                         @click="deleteSelected"
                         :disabled="buttonStatus.deleteMultipleButtonDisabled"
                 >批量删除
                 </el-button>
-                <el-select v-model="selectValue" placeholder="查询条件" class="handle-select mr10">
-                                            <el-option key="0" label="角色ID" value="id"></el-option>
-                        <el-option key="1" label="角色名称" value="name"></el-option>
-                </el-select>
                 <!--  查找输入框 -->
                 <el-input
+                        size="small"
                         v-model="inputVale"
-                        :placeholder="selectValue? '请输入' + nameMap[selectValue]  : '请输入查询内容'"
+                        placeholder="请输入角色ID或者名称"
                         class="handle-input mr10"></el-input>
                 <el-button
-                        type="primary"
+                        size="small"
                         icon="el-icon-search"
                         :disabled="buttonStatus.searchButtonDisabled"
                         @click="handleSearch">搜索
                 </el-button>
 
                 <el-button
-                        type="primary"
                         icon="el-icon-plus"
                         class="handle-add mr10"
+                        size="small"
                         @click="handleAdd"
                 >新增
                 </el-button>
             </div>
+
+            <div style="background: #fff;">
             <!-- ============   表格table begin  =================-->
             <el-table
                     :data="roleList"
                     border
                     class="table"
+                    size="mini"
+                    height="427px"
+                    :row-style="{height:'12px'}"
+                    :cell-style="{padding:'3px 1px'}"
                     ref="multipleTable"
                     header-cell-class-name="table-header"
                     :default-sort="{prop: 'date', order: 'descending'}"
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"/>
-                        <el-table-column prop="id" label="角色ID" width="55" align="center"/>
+                        <el-table-column prop="id" label="角色ID" width="75" align="center"/>
                         <el-table-column prop="name" label="角色名称"/>
                         <el-table-column prop="createTime" label="创建时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
                                 type="text"
+                                size="small"
                                 icon="el-icon-edit"
                                 @click="handleEdit(scope.$index, scope.row)"
                         >编辑
                         </el-button>
                         <el-button
                                 type="text"
+                                size="small"
                                 icon="el-icon-delete"
-                                class="red"
+                                class="#E6A23C"
                                 @click="handleDelete(scope.$index, scope.row.id)"
                         >删除
                         </el-button>
                     </template>
                 </el-table-column>
-
             </el-table>
+
             <!-- =========表格table  end============ -->
 
             <!-- 分页组件 -->
             <div class="pagination">
                 <el-pagination
-                        background
-                        layout="total, prev, pager, next"
-                        :current-page="queryParam.pageIndex"
-                        :page-size="queryParam.pageSize"
-                        :page-count="pageCount"
-                        @current-change="handlePageChange"
+                  background
+                  layout="total, prev, pager, next"
+                  :current-page="queryParam.pageIndex"
+                  :page-size="queryParam.pageSize"
+                  :page-count="pageCount"
+                  @current-change="handlePageChange"
                 ></el-pagination>
+                </div>
+                <div style="margin-bottom: 10px"></div>
             </div>
         </div>
-
         <!-- 【修改/插入】 弹出框   -->
         <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
             <el-form ref="role" :model="role" label-width="70px">
@@ -122,7 +121,6 @@
                 <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="save">确 定</el-button>
             </span>
         </el-dialog>
-
     </div>
 </template>
 
@@ -151,14 +149,6 @@
         isLoading: false,
         /*搜索框，选择框*/
         inputVale: '',
-        selectValue: 'id',
-        //下拉选择框映射
-        nameMap: {
-        id:'角色ID',
-        name:'角色名称',
-        createTime:'创建时间',
-            updateTime: '修改时间',
-        },
           /* 控制按钮状态 */
           buttonStatus: {
               deleteMultipleButtonDisabled: false,
@@ -251,8 +241,11 @@
 
         // 自己定义，参数校验
         // ...
+
+          //如果不是数字就是根据名字查询，如果是数字根据id查
+        let queryColumn = isNaN(inputValue) ? 'name' : 'id';
         this.resetQueryParam();
-        this.$set(this.queryParam, this.selectValue, inputValue);
+        this.$set(this.queryParam, queryColumn, inputValue);
         this.list();
       },
 
@@ -504,7 +497,7 @@
     }
 
     .pagination {
-        margin: 20px 0;
+        margin: 20px 0 20px 0;
         text-align: right;
     }
 </style>

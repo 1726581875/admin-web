@@ -16,8 +16,30 @@ Vue.use(ElementUI);
 import qs from 'qs'
 Vue.prototype.$qs = qs
 
+import requestBaseUrl from './api/projectSetting'
+Vue.prototype.$requestBaseUrl = requestBaseUrl
 
+
+//-----------------------粘贴模板的
+import './assets/css/icon.css';
+import './components/common/directives';
+//-----------------------
 axios.defaults.withCredentials = true
+
+// 拦截器在请求头部设置token
+axios.interceptors.request.use(function (config) {
+  let token = window.localStorage.getItem("token");
+  if (token) {
+    //将token放到请求头发送给服务器,将token放在请求头中
+    config.headers['Authorization'] = token;
+    return config;
+  }
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
+
+
 new Vue({
   router,
   render: h => h(App)
