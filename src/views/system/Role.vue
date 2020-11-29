@@ -293,8 +293,8 @@
        */
       deleteSelected() {
         // 防刷
-        this.buttonStatus.searchButtonDisabled = true;
-        setTimeout(() => this.buttonStatus.searchButtonDisabled = false, 1000);
+        this.buttonStatus.deleteMultipleButtonDisabled = true;
+        setTimeout(() => this.buttonStatus.deleteMultipleButtonDisabled = false, 1000);
         //参数检测
         if (this.multipleSelection.length == 0) {
           this.$message.warning("你还没有选择任何元素！");
@@ -429,6 +429,10 @@
         setTimeout(() => this.buttonStatus.saveButtonDisabled = false, 1000);
 
         //2、参数校验
+          if(!this.role.name){
+              this.$message.warning('必须输入角色名');
+              return;
+          }
         // ...
 
           // 获取选中的树节点
@@ -444,7 +448,7 @@
               //4、重新加载数据
               this.list();
             } else {
-              this.$message.success('保存失败，请重新试试');
+              this.$message.warning('保存角色失败，请重新试试');
             }
           }).catch(err => {
           this.$message.error('保存操作发生系统内部错误');

@@ -158,6 +158,7 @@
 </template>
 
 <script>
+  import { encrypt } from '@/utils/rsaEncrypt'
   export default {
     name: 'moocManager',
     data() {
@@ -213,7 +214,6 @@
     methods: {
 
       handleAddRoleButton(){
-        console.log("11111");
         this.$axios.get('http://localhost:9001/admin/roles/all')
         .then(resp => {
           let respDate = resp.data;
@@ -235,19 +235,17 @@
        * 点击禁用/启用
        */
       handleEnable(enable, id, isUpdate) {
-        console.log("enable=" + enable + ", id=" + id);
-
+        let status = enable ? 1 : 0;
         if (isUpdate) {
-          let manager = {
-            status: enable ? 1 : 0,
-            id: id
-          }
-          this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', manager)
+          this.$axios.post('http://localhost:9001/admin/moocManagers/'+id+'/status/'+status, manager)
             .then(resp => {
               if (resp.data.success) {
                 console.log(resp.data.success);
               }
-            });
+            }).catch(err => {
+              this.$message.warning("更改用户状态发生异常");
+              this.list();
+          });
         }
       },
       //初始化查询条件
@@ -462,6 +460,12 @@
 
         let paramManager = this.moocManager;
         paramManager.status = paramManager.status ? 1 : 0;
+        paramManager.roleList = this.roles;
+        let password = paramManager.password;
+        if(password){
+          paramManager.password = encrypt(password);
+        }
+        console.log("password=" + password);
         //3、发请求
         this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', paramManager)
           .then(res => {
@@ -473,7 +477,7 @@
               this.$message.success('保存失败，请重新试试');
             }
           }).catch(err => {
-          this.$message.error('保存操作发生系统内部错误');
+          this.$message.error('保存失败，请重新试试');
           console.error("error = " + err)
         })
 

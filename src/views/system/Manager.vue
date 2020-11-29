@@ -111,19 +111,22 @@
     <!-- 【修改/插入】 弹出框   -->
     <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
       <el-form ref="moocManager" :model="moocManager" label-width="70px">
-
         <el-form-item label= "名字">
-          <el-input v-model="moocManager.name"></el-input>
+          <el-input v-model="moocManager.name" placeholder="请输入管理员姓名"></el-input>
         </el-form-item>
         <el-form-item label="账号">
-          <el-input v-model="moocManager.account" :disabled="dialogTitle=='修改'"></el-input>
-        </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="moocManager.password"></el-input>
+          <el-input v-model="moocManager.account"
+                    :disabled="dialogTitle=='修改'" placeholder="请输入登录账号"></el-input>
         </el-form-item>
         <div v-if="dialogTitle=='新增'">
+          <el-form-item label="密码">
+            <el-input type="password"
+                      v-model="moocManager.password"
+                      placeholder="请输入密码"></el-input>
+          </el-form-item>
           <el-form-item label="确认密码">
-            <el-input v-model="moocManager.confirmPassword"></el-input>
+            <el-input type="password" v-model="moocManager.confirmPassword"
+                      placeholder="请输入确认密码"></el-input>
           </el-form-item>
         </div>
         <el-form-item label="用户状态">
@@ -137,20 +140,39 @@
             @change="handleEnable($event,moocManager.id,false)">
           </el-switch>
         </el-form-item>
-        <el-form-item label="角色权限">
-          <el-tag
-            v-for="role in roles"
-            :key="role.name"
-            closable
-            @close="handleRoleTagClose(role)"
-            type="success">
-            {{role.name}}
-          </el-tag>&nbsp;&nbsp;&nbsp;&nbsp;
+        <!-- ============= 已有的角色列表============== -->
+        <el-form-item label="当前角色">
+          <!-- 添加角色按钮-->
           <el-button
             icon="el-icon-plus"
             size="small"
             @click="handleAddRoleButton">
           </el-button>
+          <el-tag
+            v-for="role in roles"
+            :key="role.name"
+            closable
+            @close="handleRoleTagClose(role)"
+            effect="plain"
+            type="info">
+            {{role.name}}
+          </el-tag>&nbsp;&nbsp;&nbsp;&nbsp;
+
+        </el-form-item>
+        <!--  角色选择框  -->
+        <el-form-item :label="showRole?'可选角色':''">
+           <div v-if="showRole" class="role-box">
+             <span  v-if="noSelectedRole.length == 0">已经没有角色可以选择</span>
+             <el-tag
+               v-for="role in noSelectedRole"
+               :key="role.name"
+               style="cursor:pointer"
+               @click="handleClickRoleTab(role)"
+               effect="plain"
+               type="info">
+               {{role.name}}
+             </el-tag>&nbsp;&nbsp;
+           </div>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -162,6 +184,8 @@
 </template>
 
 <script>
+  import { encrypt } from '@/utils/rsaEncrypt'
+
   export default {
     name: 'Manager',
     data() {
@@ -197,8 +221,12 @@
           searchButtonDisabled: false,
           saveButtonDisabled: false
         },
-        //角色列表
-        roles: []
+        //当前角色列表
+        roles: [],
+        //没有被选择的角色列表
+        noSelectedRole:[],
+        // 是否展示角色列表选择框
+        showRole: false,
       };
     },
     created() {
@@ -206,13 +234,38 @@
     },
     methods: {
 
+      handleClickRoleTab(role){
+        console.log(role);
+        this.noSelectedRole.splice(this.noSelectedRole.indexOf(role), 1);
+        this.roles.push(role);
+
+      },
+      /**
+       * 当点击添加角色按钮触发
+       * 1、
+       */
       handleAddRoleButton() {
-        console.log("11111");
+        //初始化可选择的角色
+        this.noSelectedRole =[];
+        // 展示角色选择框
+        this.showRole = true;
+        // 发请求获取全部角色列表
         this.$axios.get('http://localhost:9001/admin/roles/all')
           .then(resp => {
             let respDate = resp.data;
             if (respDate.success) {
-              console.log(respDate.data);
+              // 全部角色
+              let allRole = respDate.data;
+              // 当前用户以及具备的角色id
+              let roleIdList = [];
+              this.roles.forEach(r=>roleIdList.push(r.id));
+
+              // 设置可选择的角色列表
+              allRole.forEach(role=>{
+                  if(roleIdList.indexOf(role.id) == -1){
+                    this.noSelectedRole.push(role);
+                  }
+              });
             }
           })
 
@@ -220,6 +273,7 @@
 
       handleRoleTagClose(role) {
         this.roles.splice(this.roles.indexOf(role), 1);
+        this.noSelectedRole.push(role);
         console.log("点击关闭了 " + this.roles);
       },
 
@@ -229,19 +283,18 @@
        * 点击禁用/启用
        */
       handleEnable(enable, id, isUpdate) {
-        console.log("enable=" + enable + ", id=" + id);
-
+        let status = enable ? 1 : 0;
         if (isUpdate) {
-          let manager = {
-            status: enable ? 1 : 0,
-            id: id
-          }
-          this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', manager)
+          this.$axios.post('http://localhost:9001/admin/moocManagers/'+id+'/status/'+status)
             .then(resp => {
               if (resp.data.success) {
                 console.log(resp.data.success);
               }
-            });
+            })
+            .catch(err => {
+            this.$message.warning("更改用户状态发生异常");
+            this.list();
+          });
         }
       },
       //初始化查询条件
@@ -315,7 +368,8 @@
         // 自己定义，参数校验
         // ...
         this.resetQueryParam();
-        this.$set(this.queryParam, this.selectValue, inputValue);
+        //传账号，后台会按照账号先查，查不到再按照名字
+        this.$set(this.queryParam, 'matchStr', inputValue);
         this.list();
       },
 
@@ -419,7 +473,10 @@
        * 点击编辑按钮触发，展示编辑框
        */
       handleEdit(index, row) {
+        //弹出框标题 为修改
         this.dialogTitle = '修改';
+        //默认不展示角色选择框（点击"+"按钮才展示）
+        this.showRole = false;
         //为对象分配一个新地址，改变也不影响原来的值
         let newMoocManager = JSON.parse(JSON.stringify(row));
         this.moocManager = newMoocManager;
@@ -433,6 +490,7 @@
        */
       handleAdd() {
         this.dialogTitle = '新增';
+        this.roles = [];
         this.moocManager = {status: true};
         this.editVisible = true;
       },
@@ -450,21 +508,50 @@
         setTimeout(() => this.buttonStatus.saveButtonDisabled = false, 1000);
 
         //2、参数校验
-        // ...
-
-        this.editVisible = false;
-
         let paramManager = this.moocManager;
+        console.log(paramManager.name);
+        if(!paramManager.name){
+          this.$message.warning("名字不能为空");
+          return;
+        }
+        if(!paramManager.account){
+          this.$message.warning("账号不能为空");
+          return;
+        }
+       // 如果是新增操作，校验密码
+        if(this.dialogTitle == '新增') {
+          if (!paramManager.password ){
+            this.$message.warning("密码不能为空");
+            return;
+          }
+          if (!paramManager.confirmPassword) {
+            this.$message.warning("确认密码不能为空");
+            return;
+          }
+          if (paramManager.confirmPassword != paramManager.password) {
+            this.$message.warning("输入确认密码不对应");
+            return;
+          }
+        }
+
         paramManager.status = paramManager.status ? 1 : 0;
+        paramManager.roleList = this.roles;
+        let password = paramManager.password;
+        // 密码加密传输
+        if(password){
+          paramManager.password = encrypt(password);
+        }
         //3、发请求
         this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', paramManager)
           .then(res => {
             if (res.data.success) {
               this.$message.success('保存成功');
+              //关闭编辑框
+              this.editVisible = false;
               //4、重新加载数据
               this.list();
             } else {
-              this.$message.success('保存失败，请重新试试');
+              this.$message.info(res.data.msg);
             }
           }).catch(err => {
           this.$message.error('保存操作发生系统内部错误');
@@ -519,5 +606,12 @@
   .pagination {
     margin: 20px 0 20px 0;
     text-align: right;
+  }
+  .role-box{
+    width:100%;
+    height: 120px;
+    overflow-y:auto;
+    border:solid 1px #C0C4CC
+
   }
 </style>

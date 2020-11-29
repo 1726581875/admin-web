@@ -12,16 +12,20 @@ const routes = [
         children: [
             {
                 path: '/dashboard',
-                component: () => import(/* webpackChunkName: "dashboard" */ '../components/page/Dashboard.vue'),
+                component: () => import('../components/page/Dashboard.vue'),
                 meta: {title: '系统首页'}
             }, {
                 path: '/manager',
-                component: () => import(/* webpackChunkName: "table" */ '../views/system/Manager.vue'),
+                component: () => import('../views/system/Manager.vue'),
                 meta: { title: '管理员管理' }
             },{
                 path: '/role',
-                component: () => import(/* webpackChunkName: "table" */ '../views/system/Role.vue'),
+                component: () => import( '../views/system/Role.vue'),
                 meta: { title: '角色管理' }
+            },{
+                path: '/online',
+                component: () => import('../views/system/OnLineUser.vue'),
+                meta: { title: '在线用户管理' }
             }
         ]
     },
