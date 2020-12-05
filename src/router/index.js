@@ -23,15 +23,31 @@ const routes = [
                 component: () => import( '../views/system/Role.vue'),
                 meta: { title: '角色管理' }
             },{
+                path: '/log',
+                component: () => import('../views/system/LoginLog.vue'),
+                meta: { title: '登录日志' }
+            },{
                 path: '/online',
                 component: () => import('../views/system/OnLineUser.vue'),
                 meta: { title: '在线用户管理' }
+            },{
+                path: '/course',
+                component: () => import('../views/system/Course.vue'),
+                meta: { title: '课程管理' }
+            },{
+                path: '/course/:id',
+                component: () => import('../views/system/course/CourseDetail.vue'),
+                meta: { title: '课程详情' }
+            },{
+                path: '/category',
+                component: () => import('../views/system/category/Category.vue'),
+                meta: { title: '分类管理' }
             }
         ]
     },
     {
         path: '/login',
-        component: () => import(/* webpackChunkName: "login" */ '../Login.vue'),
+        component: () => import('../Login.vue'),
         meta: {title: '登录'}
     },
 ]

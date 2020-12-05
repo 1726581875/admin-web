@@ -69,17 +69,15 @@
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"/>
-                        <el-table-column prop="id" label="主键id" width="55" align="center"/>
+                        <el-table-column prop="image" label="封面图片"/>
                         <el-table-column prop="name" label="课程名称"/>
                         <el-table-column prop="teacherId" label="讲师id"/>
+                        <el-table-column prop="teacherId" label="讲师名字"/>
                         <el-table-column prop="summary" label="课程概述"/>
                         <el-table-column prop="duration" label="时长"/>
-                        <el-table-column prop="image" label="封面图片"/>
                         <el-table-column prop="learningNum" label="学习人数"/>
-                        <el-table-column prop="commentNum" label="评论数"/>
                         <el-table-column prop="status" label="状态"/>
                         <el-table-column prop="createTime" label="创建时间"/>
-                        <el-table-column prop="updateTime" label="修改时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button

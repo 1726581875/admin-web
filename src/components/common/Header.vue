@@ -65,11 +65,20 @@ export default {
         // 用户名下拉菜单选择事件
         handleCommand(command) {
             if (command == 'loginout') {
-                this.$axios.get('http://localhost:10000/mooc/admin/loginOut');
-                localStorage.removeItem('account');
-                localStorage.removeItem('menuList');
-                localStorage.removeItem('token');
-                this.$router.push('/login');
+                this.$axios.get('http://localhost:10000/mooc/admin/loginOut')
+                  .then(res => {
+                      if (res.data.success) {
+                          localStorage.removeItem('account');
+                          localStorage.removeItem('menuList');
+                          localStorage.removeItem('token');
+                          this.$router.push('/login');
+                          this.$message.info("登出成功");
+                      }
+                  })
+                .catch(err => {
+                    this.$message.warning("登出失败");
+                    this.$router.push('/login');
+                });
             }
         },
         // 侧边栏折叠
@@ -117,7 +126,7 @@ export default {
     position: relative;
     box-sizing: border-box;
     width: 100%;
-    height: 70px;
+    height: 60px;
     font-size: 22px;
     color: #fff;
     background: #324157;
@@ -127,20 +136,20 @@ export default {
     float: left;
     padding: 0 21px;
     cursor: pointer;
-    line-height: 70px;
+    line-height: 60px;
 }
 .mooc-header .logo {
     float: left;
     width: 250px;
-    line-height: 70px;
+    line-height: 60px;
 }
 .header-right {
     float: right;
-    padding-right: 50px;
+    padding-right: 60px;
 }
 .header-user-con {
     display: flex;
-    height: 70px;
+    height: 60px;
     align-items: center;
 }
 .btn-fullscreen {

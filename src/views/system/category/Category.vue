@@ -1,140 +1,124 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <div class="handle-box">
                 <el-button
-                        type="primary"
                         icon="el-icon-refresh-right"
                         class="handle-del mr10"
+                        size="small"
                         :loading="isLoading"
                         @click="reloadList"
                 >刷新
                 </el-button>
                 <el-button
-                        type="danger"
                         icon="el-icon-delete"
                         class="handle-del mr10"
+                        size="small"
                         @click="deleteSelected"
                         :disabled="buttonStatus.deleteMultipleButtonDisabled"
                 >批量删除
                 </el-button>
-                <el-select v-model="selectValue" placeholder="查询条件" class="handle-select mr10">
-                                            <el-option key="0" label="主键" value="id"></el-option>
-                        <el-option key="1" label="日志名称" value="logname"></el-option>
-                        <el-option key="2" label="管理员账号" value="username"></el-option>
-                        <el-option key="4" label="是否执行成功" value="succeed"></el-option>
-                        <el-option key="5" label="具体消息" value="message"></el-option>
-                        <el-option key="6" label="登录ip" value="ip"></el-option>
-                        <el-option key="7" label="" value="userId"></el-option>
-                        <el-option key="8" label="系统类型" value="systemType"></el-option>
-                </el-select>
                 <!--  查找输入框 -->
                 <el-input
+                        size="small"
                         v-model="inputVale"
-                        :placeholder="selectValue? '请输入' + nameMap[selectValue]  : '请输入查询内容'"
+                        placeholder="请输入角色ID或者名称"
                         class="handle-input mr10"></el-input>
                 <el-button
-                        type="primary"
+                        size="small"
                         icon="el-icon-search"
                         :disabled="buttonStatus.searchButtonDisabled"
                         @click="handleSearch">搜索
                 </el-button>
 
                 <el-button
-                        type="primary"
                         icon="el-icon-plus"
                         class="handle-add mr10"
+                        size="small"
                         @click="handleAdd"
                 >新增
                 </el-button>
             </div>
+
+            <div style="background: #fff;">
             <!-- ============   表格table begin  =================-->
             <el-table
-                    :data="loginLogList"
-                    border
+                    :data="categoryList"
                     class="table"
+                    size="mini"
+                    height="427px"
+                    :row-style="{height:'12px'}"
+                    :cell-style="{padding:'3px 1px'}"
                     ref="multipleTable"
                     header-cell-class-name="table-header"
                     :default-sort="{prop: 'date', order: 'descending'}"
                     @selection-change="handleSelectionChange"
             >
-                <el-table-column type="selection" width="55" align="center"/>
-                        <el-table-column prop="id" label="主键" width="55" align="center"/>
-                        <el-table-column prop="logname" label="日志名称"/>
-                        <el-table-column prop="username" label="管理员账号"/>
-                        <el-table-column prop="createTime" label="创建时间"/>
-                        <el-table-column prop="succeed" label="是否执行成功"/>
-                        <el-table-column prop="message" label="具体消息"/>
-                        <el-table-column prop="ip" label="登录ip"/>
-                        <el-table-column prop="userId" label=""/>
-                        <el-table-column prop="systemType" label="系统类型"/>
+                <el-table-column type="expand">
+                    <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                            <el-form-item label="分类ID:">
+                                <span>{{ props.row.id }}</span>
+                            </el-form-item>
+                            <el-form-item label="分类名:">
+                                <span>{{ props.row.name }}</span>
+                            </el-form-item>
+                            <el-form-item label="描述:">
+                                <span>{{ props.row.description }}</span>
+                            </el-form-item>
+                        </el-form>
+                    </template>
+                </el-table-column>
+
+                <el-table-column prop="id" label="ID" width="80" align="center"/>
+                <el-table-column prop="name" label="分类名称" width="150"/>
+                <el-table-column prop="description" label="分类描述"/>
+                <el-table-column prop="createTime" label="创建时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
                                 type="text"
+                                size="small"
                                 icon="el-icon-edit"
                                 @click="handleEdit(scope.$index, scope.row)"
                         >编辑
                         </el-button>
                         <el-button
                                 type="text"
+                                size="small"
                                 icon="el-icon-delete"
-                                class="red"
+                                class="#E6A23C"
                                 @click="handleDelete(scope.$index, scope.row.id)"
                         >删除
                         </el-button>
                     </template>
                 </el-table-column>
-
             </el-table>
+
             <!-- =========表格table  end============ -->
 
             <!-- 分页组件 -->
             <div class="pagination">
                 <el-pagination
-                        background
-                        layout="total, prev, pager, next"
-                        :current-page="queryParam.pageIndex"
-                        :page-size="queryParam.pageSize"
-                        :page-count="pageCount"
-                        @current-change="handlePageChange"
+                  background
+                  layout="total, prev, pager, next"
+                  :current-page="queryParam.pageIndex"
+                  :page-size="queryParam.pageSize"
+                  :page-count="pageCount"
+                  @current-change="handlePageChange"
                 ></el-pagination>
+                </div>
+                <div style="margin-bottom: 10px"></div>
             </div>
         </div>
-
         <!-- 【修改/插入】 弹出框   -->
         <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
-            <el-form ref="loginLog" :model="loginLog" label-width="70px">
-                        <el-form-item label="日志名称">
-                            <el-input v-model="loginLog.logname"></el-input>
+            <el-form ref="category" :model="category" label-width="70px">
+                        <el-form-item label="分类名称">
+                            <el-input v-model="category.name"></el-input>
                         </el-form-item>
-                        <el-form-item label="管理员账号">
-                            <el-input v-model="loginLog.username"></el-input>
-                        </el-form-item>
-                        <el-form-item label="创建时间">
-                            <el-input v-model="loginLog.createTime"></el-input>
-                        </el-form-item>
-                        <el-form-item label="是否执行成功">
-                            <el-input v-model="loginLog.succeed"></el-input>
-                        </el-form-item>
-                        <el-form-item label="具体消息">
-                            <el-input v-model="loginLog.message"></el-input>
-                        </el-form-item>
-                        <el-form-item label="登录ip">
-                            <el-input v-model="loginLog.ip"></el-input>
-                        </el-form-item>
-                        <el-form-item label="">
-                            <el-input v-model="loginLog.userId"></el-input>
-                        </el-form-item>
-                        <el-form-item label="系统类型">
-                            <el-input v-model="loginLog.systemType"></el-input>
+                        <el-form-item label="分类描述">
+                            <el-input v-model="category.description"></el-input>
                         </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -142,66 +126,46 @@
                 <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="save">确 定</el-button>
             </span>
         </el-dialog>
-
     </div>
 </template>
 
 <script>
   export default {
-    name: 'loginLog',
+    name: 'category',
     data() {
       return {
         /* 分页查询条件 */
         queryParam: {
         id: null,
-        logname: null,
-        username: null,
-        succeed: null,
-        message: null,
-        ip: null,
-        userId: null,
-        systemType: null,
+        name: null,
+        description: null,
           pageIndex: 1,
           pageSize: 10
         },
         //分页查询结果
-        loginLogList: [],
+        categoryList: [],
         pageCount: 1,
         //多选，选择的元素
         multipleSelection: [],
         /* 控制弹出框 */
         editVisible: false,
         dialogTitle: '',
-        loginLog: {},
+        category: {},
         //刷新 转动
         isLoading: false,
         /*搜索框，选择框*/
         inputVale: '',
-        selectValue: 'id',
-        //下拉选择框映射
-        nameMap: {
-        id:'主键',
-        logname:'日志名称',
-        username:'管理员账号',
-        createTime:'创建时间',
-        succeed:'是否执行成功',
-        message:'具体消息',
-        ip:'登录ip',
-        userId:'',
-        systemType:'系统类型',
-      },
-      /* 控制按钮状态 */
-      buttonStatus: {
-        deleteMultipleButtonDisabled: false,
-         searchButtonDisabled: false,
-         saveButtonDisabled: false
-      },
-
-    };
+          /* 控制按钮状态 */
+          buttonStatus: {
+              deleteMultipleButtonDisabled: false,
+              searchButtonDisabled: false,
+              saveButtonDisabled: false
+          },
+      };
     },
-    created() {
-      this.list();
-    },
+      created() {
+          this.list();
+      },
     methods: {
 
       //初始化查询条件
@@ -214,14 +178,14 @@
        * 刷新
        * 说明：点击刷新按钮触发
        * 1、图标转动isLoading = true
-       * 2、loginLogList置空
+       * 2、categoryList置空
        * 3、初始化查询条件
        * 4、延迟一秒，发ajax获取列表信息 （为了用户体验）
        */
       reloadList() {
         let _this = this;
         _this.isLoading = true;
-        _this.loginLogList = [];
+        _this.categoryList = [];
         _this.resetQueryParam();
         // 延迟一秒执行
         setTimeout(function () {
@@ -236,18 +200,16 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/loginLogs/list', {
+        this.$axios.get('http://localhost:9001/admin/categorys/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
           if (result.success) {
-            this.loginLogList = result.data.content;
+            this.categoryList = result.data.content;
             this.pageCount = result.data.pageCount;
-          }else {
-            this.$message.warning('获取登录日志异常');
           }
         }).catch(err => {
-          this.$message.warning('获取登录日志异常');
+          this.$message.error('发生系统内部错误');
           console.error("error = " + err)
         });
       },
@@ -276,8 +238,11 @@
 
         // 自己定义，参数校验
         // ...
+
+          //如果不是数字就是根据名字查询，如果是数字根据id查
+        let queryColumn = isNaN(inputValue) ? 'name' : 'id';
         this.resetQueryParam();
-        this.$set(this.queryParam, this.selectValue, inputValue);
+        this.$set(this.queryParam, queryColumn, inputValue);
         this.list();
       },
 
@@ -299,7 +264,7 @@
        * 根据id删除
        */
       deleteById(id){
-        this.$axios.delete("http://localhost:9001/admin/loginLogs/" + id)
+        this.$axios.delete("http://localhost:9001/admin/categorys/" + id)
           .then(res => {
             res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
             this.list();
@@ -319,7 +284,7 @@
       /**
        * 说明：点击批量删除按钮时触发
        *  批量删除,删除已经选择的
-       * 1、获取到要删除的loginLogId数组
+       * 1、获取到要删除的categoryId数组
        * 2、弹出框，提示信息，二次确认
        * 3、发ajax，批量删除
        */
@@ -333,25 +298,25 @@
           return;
         }
 
-        // 1、获取到要删除的loginLog id数组
-        const loginLogIdList = [];
+        // 1、获取到要删除的category id数组
+        const categoryIdList = [];
         // 名字 list
-        let delLoginLogNames = [];
-        this.multipleSelection.forEach((loginLog, index) => {
-          // 拿到要删除的loginLogId
-          loginLogIdList.push(loginLog.id);
+        let delCategoryNames = [];
+        this.multipleSelection.forEach((category, index) => {
+          // 拿到要删除的categoryId
+          categoryIdList.push(category.id);
           // 取前五个名字
           if (index <= 5) {
-            delLoginLogNames.push(loginLog.name);
+            delCategoryNames.push(category.name);
           }
         });
-        let delCount = loginLogIdList.length;
+        let delCount = categoryIdList.length;
         // 批量删除的名字拼接 String
-        let delMsgStr = delCount <= 5 ? delLoginLogNames.toString() : delLoginLogNames.toString() + '...';
+        let delMsgStr = delCount <= 5 ? delCategoryNames.toString() : delCategoryNames.toString() + '...';
 
         //2、弹出框，提示信息,二次确认
         this.$confirm(`确定要批量删除 [<span style="color: red">${delMsgStr}</span>] 一共
-         <span style="color: red">${loginLogIdList.length}</span> 列吗?`, '提示', {
+         <span style="color: red">${categoryIdList.length}</span> 列吗?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
@@ -359,7 +324,7 @@
         }).then(() => {//当点击确认
 
           //3、发送批量删除请求
-          this.$axios.post("http://localhost:9001/admin/loginLogs/batch/delete", loginLogIdList)
+          this.$axios.post("http://localhost:9001/admin/categorys/batch/delete", categoryIdList)
             .then(res => {
               res.data.success ? this.$message.success(`删除了 ${delMsgStr}`) : this.$message.error('批量删除失败，请刷新后重新试试');
               //延迟一秒执行
@@ -377,25 +342,30 @@
         this.multipleSelection = [];
       },
 
-      /**
-       * 点击编辑按钮触发，展示编辑框
-       */
-      handleEdit(index, row) {
-        this.dialogTitle = '修改';
-        //为对象分配一个新地址，改变也不影响原来的值
-        let newLoginLog = JSON.parse(JSON.stringify(row));
-        this.loginLog = newLoginLog;
-        // 展示编辑框
-        this.editVisible = true;
-      },
+        /**
+         * 点击编辑按钮触发，展示编辑框
+         */
+        handleEdit: function (index, row) {
+            //初始化展开和选中节点
+            this.menuTree = [];
+            this.selectedMenu = [];
+            this.expandedMenu = [];
+
+            this.dialogTitle = '修改';
+            //为对象分配一个新地址，改变也不影响原来的值
+            let newCategory = JSON.parse(JSON.stringify(row));
+            this.category = newCategory;
+            // 展示编辑框
+            this.editVisible = true;
+        },
 
       /**
        *  点击新增，展示新增框
        */
       handleAdd() {
-        this.dialogTitle = '新增';
-        this.loginLog = {};
-        this.editVisible = true;
+          this.dialogTitle = '新增';
+          this.category = {};
+          this.editVisible = true;
       },
 
       /**
@@ -406,29 +376,28 @@
        * 4、重新查询数据(刷新)
        */
       save() {
-        //1、防刷控制
-        this.buttonStatus.saveButtonDisabled = true;
-        setTimeout(() => this.buttonStatus.saveButtonDisabled = false, 1000);
+          //1、防刷控制
+          this.buttonStatus.saveButtonDisabled = true;
+          setTimeout(() => this.buttonStatus.saveButtonDisabled = false, 1000);
 
-        //2、参数校验
-        // ...
+          //2、参数校验
+          // ...
 
-        this.editVisible = false;
-        //3、发请求
-        this.$axios.post('http://localhost:9001/admin/loginLogs/loginLog', this.loginLog)
-          .then(res => {
-            if (res.data.success) {
-              this.$message.success('保存成功');
-              //4、重新加载数据
-              this.list();
-            } else {
-              this.$message.success('保存失败，请重新试试');
-            }
-          }).catch(err => {
-          this.$message.error('保存操作发生系统内部错误');
-          console.error("error = " + err)
-        })
-
+          this.editVisible = false;
+          //3、发请求
+          this.$axios.post('http://localhost:9001/admin/categorys/category', this.category)
+                  .then(res => {
+                      if (res.data.success) {
+                          this.$message.success('保存成功');
+                          //4、重新加载数据
+                          this.list();
+                      } else {
+                          this.$message.success('保存失败，请重新试试');
+                      }
+                  }).catch(err => {
+              this.$message.error('保存操作发生系统内部错误');
+              console.error("error = " + err)
+          });
       },
       // 分页导航
       handlePageChange(val) {
@@ -475,7 +444,22 @@
     }
 
     .pagination {
-        margin: 20px 0;
+        margin: 20px 0 20px 0;
         text-align: right;
     }
+
+
+    .demo-table-expand {
+        font-size: 0;
+    }
+    .demo-table-expand label {
+        width: 90px;
+        color: #99a9bf;
+    }
+    .demo-table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
+    }
+
 </style>

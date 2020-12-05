@@ -47,9 +47,9 @@
                     border
                     class="table"
                     size="mini"
-                    height="427px"
-                    :row-style="{height:'12px'}"
-                    :cell-style="{padding:'3px 1px'}"
+                    height="447px"
+                    :row-style="{height:'14px'}"
+                    :cell-style="{padding:'4px 1px'}"
                     ref="multipleTable"
                     header-cell-class-name="table-header"
                     :default-sort="{prop: 'date', order: 'descending'}"

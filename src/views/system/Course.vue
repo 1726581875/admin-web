@@ -35,7 +35,7 @@
       <div style="background: #fff;">
         <!-- ============   表格table begin  =================-->
         <el-table
-          :data="userList"
+          :data="courseList"
           border
           class="table"
           size="mini"
@@ -48,19 +48,39 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" align="center"/>
-          <el-table-column prop="name" label="用户昵称"/>
-          <el-table-column prop="account" label="用户账号"/>
-          <el-table-column prop="ip" label="ip"/>
-          <el-table-column prop="loginTime" label="登录时间"/>
+          <el-table-column label="封面图片" align="center">
+            <template slot-scope="scope">
+              <el-image
+                class="table-td-thumb"
+                src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1607091115606&di=a99240461487fc91ef53cfba5cb47be9&imgtype=0&src=http%3A%2F%2Fa2.att.hudong.com%2F27%2F81%2F01200000194677136358818023076.jpg"
+                :preview-src-list="[scope.row.thumb]"
+              ></el-image>
+            </template>
+          </el-table-column>
+          <el-table-column prop="id" label="ID"/>
+          <el-table-column prop="name" label="课程名称"/>
+          <el-table-column prop="teacherName" label="讲师名字"/>
+          <el-table-column prop="duration" label="时长"/>
+          <el-table-column prop="learningNum" label="学习人数"/>
+          <el-table-column prop="status" label="状态"/>
+          <el-table-column prop="createTime" label="创建时间"/>
+          <!-- 课程操作 编辑/删除  -->
           <el-table-column label="操作" width="180" align="center">
             <template slot-scope="scope">
               <el-button
                 type="text"
                 size="small"
-                icon="el-icon-caret-bottom"
+                icon="el-icon-edit"
+                @click="handleEdit(scope.row.id)"
+              >编辑
+              </el-button>
+              <el-button
+                type="text"
+                size="small"
+                icon="el-icon-delete"
                 class="#E6A23C"
-                @click="handleDelete(scope.$index, scope.row.account)"
-              >下线
+                @click="handleDelete(scope.$index, scope.row.id)"
+              >删除
               </el-button>
             </template>
           </el-table-column>
@@ -87,7 +107,7 @@
 
 <script>
   export default {
-    name: 'OnlineUser',
+    name: 'Course',
     data() {
       return {
         /* 分页查询条件 */
@@ -97,7 +117,7 @@
           pageSize: 10
         },
         //分页查询结果
-        userList: [],
+        courseList: [],
         pageCount: 1,
         //多选，选择的元素
         multipleSelection: [],
@@ -128,14 +148,14 @@
        * 刷新
        * 说明：点击刷新按钮触发
        * 1、图标转动isLoading = true
-       * 2、userList置空
+       * 2、courseList置空
        * 3、初始化查询条件
        * 4、延迟一秒，发ajax获取列表信息 （为了用户体验）
        */
       reloadList() {
         let _this = this;
         _this.isLoading = true;
-        _this.userList = [];
+        _this.courseList = [];
         _this.inputVale = "";
         _this.resetQueryParam();
         // 延迟一秒执行
@@ -151,16 +171,16 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get(this.$requestBaseUrl.authorize + '/onlineUser/list', {
+        this.$axios.get('http://localhost:9001/admin/courses/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
           if (result.success) {
-            this.userList = result.data.content;
+            this.courseList = result.data.content;
             this.pageCount = result.data.pageCount;
           }
         }).catch(err => {
-          this.$message.error('加载在线用户发生异常');
+          this.$message.error('发生系统内部错误');
           console.error("error = " + err)
         });
       },
@@ -195,7 +215,7 @@
        *  点击下线按钮触发该方法
        */
       handleDelete(index, account) {
-        let name = this.userList[index].name;
+        let name = this.courseList[index].name;
         // 弹框，二次确认下线
         this.$confirm(`确定要下线用户 <span style="color: red">${name}</span> 吗`, '提示', {
           type: 'warning',
@@ -206,6 +226,17 @@
           console.log("已取消");
         });
       },
+
+      /**
+       * 点击编辑按钮触发，展示编辑框
+       */
+      handleEdit(id) {
+        console.log("点击了编辑.." + id);
+        this.$router.push({
+          path: `/course/${id}`,
+        });
+      },
+
 
       /**
        * 根据账号下线用户

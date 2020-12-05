@@ -47,7 +47,7 @@
           border
           class="table"
           size="mini"
-          height="427px"
+          height="447px"
           :row-style="{height:'12px'}"
           :cell-style="{padding:'3px 1px'}"
           ref="multipleTable"
@@ -508,8 +508,8 @@
         setTimeout(() => this.buttonStatus.saveButtonDisabled = false, 1000);
 
         //2、参数校验
-        let paramManager = this.moocManager;
-        console.log(paramManager.name);
+        let paramManager = JSON.parse(JSON.stringify(this.moocManager));
+
         if(!paramManager.name){
           this.$message.warning("名字不能为空");
           return;

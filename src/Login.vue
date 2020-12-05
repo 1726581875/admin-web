@@ -66,23 +66,20 @@
             loginParam.password = encrypt(this.param.password);
             this.$axios.post(this.$requestBaseUrl.authorize+'/mooc/admin/login',loginParam)
               .then(resp => {
-                console.log(resp.data);
                 let respResult = resp.data;
-                if(respResult.success){
+                // 如果登录成功
+                if(respResult.success) {
                   // let path = this.$route.query.redirect;
                   // this.$router.replace((path == '/' || path == undefined) ? '/about' : path);
                   console.log("登录成功...")
-                  localStorage.setItem('ms_username', '1111111111');
-                  localStorage.setItem('token',respResult.data.token);
-                  localStorage.setItem('menuList',JSON.stringify(respResult.data.menuList));
-                  localStorage.setItem('account',this.param.username);
+                  localStorage.setItem('token', respResult.data.token);
+                  localStorage.setItem('menuList', JSON.stringify(respResult.data.menuList));
+                  localStorage.setItem('account', this.param.username);
                   this.$router.push('/');
                 }else {
-                  this.$message.error(respResult.msg);
-                  this.updateVerificationCode();
+                  this.$message.warning(respResult.msg);
                 }
-              })
-
+              });
           } else {
             this.$message.error('请输入账号和密码');
             return false;
