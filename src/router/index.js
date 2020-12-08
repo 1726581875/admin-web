@@ -32,7 +32,7 @@ const routes = [
                 meta: { title: '在线用户管理' }
             },{
                 path: '/course',
-                component: () => import('../views/system/Course.vue'),
+                component: () => import('../views/system/course/Course.vue'),
                 meta: { title: '课程管理' }
             },{
                 path: '/course/:id',
@@ -42,6 +42,14 @@ const routes = [
                 path: '/category',
                 component: () => import('../views/system/category/Category.vue'),
                 meta: { title: '分类管理' }
+            },{
+                path: '/user',
+                component: () => import('../views/system/user/MoocUser.vue'),
+                meta: { title: '普通用户管理' }
+            },{
+                path: '/teacher',
+                component: () => import('../views/system/user/Teacher.vue'),
+                meta: { title: '教师管理' }
             }
         ]
     },

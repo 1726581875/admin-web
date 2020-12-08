@@ -57,11 +57,11 @@
               ></el-image>
             </template>
           </el-table-column>
-          <el-table-column prop="id" label="ID"/>
+          <el-table-column prop="id" label="ID" width="55"/>
           <el-table-column prop="name" label="课程名称"/>
           <el-table-column prop="teacherName" label="讲师名字"/>
-          <el-table-column prop="duration" label="时长"/>
-          <el-table-column prop="learningNum" label="学习人数"/>
+          <el-table-column prop="duration" label="时长" width="80"/>
+          <el-table-column prop="learningNum" label="学习人数" width="80"/>
           <el-table-column prop="status" label="状态"/>
           <el-table-column prop="createTime" label="创建时间"/>
           <!-- 课程操作 编辑/删除  -->

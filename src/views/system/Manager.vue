@@ -148,6 +148,7 @@
             size="small"
             @click="handleAddRoleButton">
           </el-button>
+          &nbsp;&nbsp;&nbsp;&nbsp;
           <el-tag
             v-for="role in roles"
             :key="role.name"
@@ -270,7 +271,10 @@
           })
 
       },
-
+      /**
+       *
+       * 点击移除角色
+       */
       handleRoleTagClose(role) {
         this.roles.splice(this.roles.indexOf(role), 1);
         this.noSelectedRole.push(role);
@@ -614,4 +618,9 @@
     border:solid 1px #C0C4CC
 
   }
+
+  .el-tag + .el-tag {
+    margin-left: 10px;
+  }
+
 </style>
