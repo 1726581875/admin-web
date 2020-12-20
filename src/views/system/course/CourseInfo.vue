@@ -233,7 +233,7 @@
       handleEdit(id) {
         console.log("点击了编辑.." + id);
         this.$router.push({
-          path: `/course/${id}`,
+          path: `/courseInfo/${id}`,
         });
       },
 

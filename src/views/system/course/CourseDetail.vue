@@ -109,7 +109,7 @@
       goBack(){
         console.log("点击了返回");
         this.$router.push({
-          path: '/course',
+          path: '/courseInfo',
         })
       },
       onSubmit() {

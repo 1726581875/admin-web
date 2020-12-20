@@ -87,7 +87,7 @@
         });
       },
       updateVerificationCode() {
-        this.vcUrl = this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date();
+        this.vcUrl = this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date().getTime();
       },
 
     },

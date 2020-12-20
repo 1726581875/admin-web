@@ -31,14 +31,18 @@ const routes = [
                 component: () => import('../views/system/OnLineUser.vue'),
                 meta: { title: '在线用户管理' }
             },{
-                path: '/course',
-                component: () => import('../views/system/course/Course.vue'),
-                meta: { title: '课程管理' }
+                path: '/courseInfo',
+                component: () => import('../views/system/course/CourseInfo.vue'),
+                meta: { title: '课程信息管理' }
             },{
-                path: '/course/:id',
+                path: '/courseInfo/:id',
                 component: () => import('../views/system/course/CourseDetail.vue'),
                 meta: { title: '课程详情' }
             },{
+                path: '/chapter',
+                component: () => import('../views/system/course/Chapter.vue'),
+                meta: { title: '章节管理' }
+          },{
                 path: '/category',
                 component: () => import('../views/system/category/Category.vue'),
                 meta: { title: '分类管理' }
@@ -50,6 +54,10 @@ const routes = [
                 path: '/teacher',
                 component: () => import('../views/system/user/Teacher.vue'),
                 meta: { title: '教师管理' }
+            },{
+                path: '/section',
+                component: () => import('../views/Section.vue'),
+                meta: { title: '小节管理' }
             }
         ]
     },
