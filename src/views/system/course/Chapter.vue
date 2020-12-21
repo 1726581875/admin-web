@@ -53,7 +53,7 @@
                               icon="el-icon-plus"
                               class="handle-add mr10"
                               size="mini"
-                              @click="handleAdd"
+                              @click="handleAddSection"
                             >新增小节
                             </el-button>
                             <!-- 大章节下的小节列表-->
@@ -65,6 +65,11 @@
                               row-key="id"
                               style="width: 100%"
                             >
+                                <el-table-column label="点击播放" width="40" align="center">
+                                    <template slot-scope="scope">
+                                        <el-button  size="mini" icon="el-icon-caret-right" circle></el-button>
+                                    </template>
+                                </el-table-column>
                                 <el-table-column prop="title" label="小节名称"/>
                                 <el-table-column prop="duration" label="时长" sortable/>
                                 <el-table-column label="操作" width="180" align="center">
@@ -73,7 +78,7 @@
                                           type="text"
                                           size="small"
                                           icon="el-icon-edit"
-                                          @click="handleEdit(scope.$index, scope.row)"
+                                          @click="handleEditSection(props.$index,scope.$index, scope.row)"
                                         >编辑
                                         </el-button>
                                         <el-button
@@ -91,6 +96,7 @@
                     </template>
                 </el-table-column>
 
+                <!--  Chapter 属性-->
                 <el-table-column prop="courseName" label="所属课程"/>
                 <el-table-column min-width="300px" label="大章名称">
                     <template slot-scope="{row}">
@@ -109,6 +115,7 @@
                         <span v-else>{{ row.name }}</span>
                     </template>
                 </el-table-column>
+                <el-table-column prop="time" label="时长" />
                 <el-table-column prop="createTime" label="创建时间" sortable/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
@@ -142,7 +149,7 @@
                 </el-table-column>
             </el-table>
 
-            <!-- =========表格table  end============ -->
+            <!-- =========表格table end============ -->
 
             <!-- 分页组件 -->
             <div class="pagination">
@@ -159,7 +166,7 @@
             </div>
         </div>
 
-        <!-- ==========================【修改/插入】 弹出框=======================   -->
+        <!-- ==========================【修改/插入】 Chapter 大章 弹出框=======================   -->
         <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
             <el-form ref="chapter" :model="chapter" label-width="70px">
             <el-form-item label="分类名称">
@@ -179,6 +186,55 @@
                 <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="save">确 定</el-button>
             </span>
         </el-dialog>
+
+        <!-- ==================【修改/插入】 Section 小节弹出框  ============================== -->
+        <el-dialog :title="dialogTitle" :visible.sync="editSectionVisible" width="500px">
+            <el-form ref="section" :model="section" label-width="70px">
+                <el-form-item label="标题">
+                    <el-input v-model="section.title"></el-input>
+                </el-form-item>
+                <el-form-item label="课程id">
+                    <el-input v-model="section.courseId"></el-input>
+                </el-form-item>
+                <el-form-item label="章节id">
+                    <el-input v-model="section.chapterId"></el-input>
+                </el-form-item>
+                <el-form-item label="视频">
+                    <div v-if="videoUrl">
+                        <video width="90%" height="220" v-bind:src="videoUrl" id="video" controls="controls" class="hidden"></video>
+                        <el-button style="margin-left: 10px;" size="small" type="danger" @click="submitUpload">删除视频</el-button>
+                    </div>
+                    <div v-else>
+                    <el-upload
+                      class="upload-demo"
+                      ref="upload"
+                      action="https://localhost:9002/file/upload"
+                      :on-preview="handlePreview"
+                      :on-remove="handleRemove"
+                      :http-request="upload"
+                      :auto-upload="false">
+                        <i class="el-icon-upload"></i>
+                        <div class="el-upload__text">将视频拖到此处，或<em>点击上传</em></div>
+                        <div slot="tip" class="el-upload__tip">只能上传mp4/avi视频，且不超过500M</div>
+                    </el-upload>
+                    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                    <el-progress :percentage="uploadProcess"></el-progress>
+                    </div>
+                </el-form-item>
+                <el-form-item label="时长">
+                    <el-input v-model="section.duration"></el-input>
+                </el-form-item>
+                <el-form-item label="顺序">
+                    <el-input v-model="section.sort"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="handleCancelEditSection">取 消</el-button>
+                <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="saveSection">确 定</el-button>
+            </span>
+        </el-dialog>
+
+
     </div>
 </template>
 
@@ -187,6 +243,9 @@
     name: 'chapter',
     data() {
       return {
+          videoUrl:'',
+          // 进度条
+          uploadProcess: 0,
         /* 分页查询条件 */
         queryParam: {
         id: null,
@@ -204,6 +263,9 @@
         editVisible: false,
         dialogTitle: '',
         chapter: {},
+          editSectionVisible: false,
+          section: {},
+          oldSection: {},
         //刷新 转动
         isLoading: false,
         /*搜索框，选择框*/
@@ -226,6 +288,10 @@
       },
     methods: {
 
+        getCountTime(chapterId){
+            console.log("chapterId=" + chapterId);
+            return 20;
+        },
         /**
          * 取消行内编辑
          */
@@ -271,6 +337,10 @@
            .then(res => {
                if(res.data.success){
                    row.sectionList = res.data.data;
+
+                   let countTime = 0;
+                   row.sectionList.forEach(e => countTime = countTime + e.duration);
+                   row.time = countTime;
                }else {
                    row.sectionList = [];
                    this.$message.warning(res.data.msg);
@@ -393,37 +463,6 @@
           console.error("error = " + err)
         })
       },
-
-      /**
-       *  点击删除按钮触发
-       */
-      handleDeleteSection(chapterIndex,sectionIndex, sectionId) {
-
-        console.log(chapterIndex + " " + sectionIndex + " " + sectionId);
-        // 弹框，二次确认删除
-        this.$confirm('确定要删除吗？', '提示', {
-          type: 'warning'
-        }).then(() => { // 点击确认删除
-          this.deleteSectionById(chapterIndex,sectionIndex, sectionId);
-        }).catch(() => {// 点击取消
-          console.log("已取消");
-        });
-      },
-
-      deleteSectionById(chapterIndex,sectionIndex, sectionId){
-          // 发ajax请求后台删除
-          this.$axios.delete(this.$requestBaseUrl.core + "/admin/sections/" + sectionId)
-            .then(res => {
-                res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
-                // 从数组中移除
-                this.chapterList[chapterIndex].sectionList.splice(sectionIndex,1);
-            }).catch(err => {
-              this.$message.error('删除操作发生系统内部错误');
-              console.error("error = " + err)
-          })
-      },
-
-
         /**
          * 点击编辑按钮触发，展示编辑框
          */
@@ -486,7 +525,340 @@
         console.log("val = " + val)
         this.$set(this.queryParam, 'pageIndex', val);
         this.list();
-      }
+      },
+
+        /**
+         * ==========================================================
+         * =========================Section相关 ======================
+         * ==========================================================
+         */
+
+
+      /**
+       *  点击删除按钮触发
+       */
+      handleDeleteSection(chapterIndex,sectionIndex, sectionId) {
+
+        console.log(chapterIndex + " " + sectionIndex + " " + sectionId);
+        // 弹框，二次确认删除
+        this.$confirm('确定要删除吗？', '提示', {
+          type: 'warning'
+        }).then(() => { // 点击确认删除
+          this.deleteSectionById(chapterIndex,sectionIndex, sectionId);
+        }).catch(() => {// 点击取消
+          console.log("已取消");
+        });
+      },
+
+
+        /**
+         * 根据id删除section
+         */
+        deleteSectionById(chapterIndex,sectionIndex, sectionId){
+          // 发ajax请求后台删除
+          this.$axios.delete(this.$requestBaseUrl.core + "/admin/sections/" + sectionId)
+            .then(res => {
+              res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
+              // 从数组中移除
+              this.chapterList[chapterIndex].sectionList.splice(sectionIndex,1);
+            }).catch(err => {
+            this.$message.error('删除操作发生系统内部错误');
+            console.error("error = " + err)
+          })
+        },
+
+
+         /**
+         * 点击编辑按钮触发，展示编辑框
+         */
+        handleEditSection(chapterIndex,sectionIndex, row) {
+
+            this.dialogTitle = '修改';
+            this.videoUrl = '';
+            this.section = row;
+            // 保存旧值
+            this.oldSection = JSON.parse(JSON.stringify(row));
+            // 如果有地址说明已经上传视频
+            if(this.section.video){
+              this.videoUrl = this.$requestBaseUrl.file + this.section.video;
+            }
+            // 展示编辑框
+            this.editSectionVisible = true;
+        },
+      handleCancelEditSection() {
+          console.log(this.oldSection);
+          // 恢复旧值
+          this.section = this.oldSection;
+        this.editSectionVisible = false;
+      },
+
+        /**
+         *  点击新增，展示新增框
+         */
+        handleAddSection() {
+            this.dialogTitle = '新增';
+            this.section = {};
+            this.videoUrl = '';
+            this.editSectionVisible = true;
+        },
+
+
+      /**
+       *
+       * 点击删除视频按钮
+       */
+       handleDeleteVideoButton(){
+         this.$confirm('确定要删除吗？', '提示', {
+           type: 'warning'
+         }).then(() => { // 点击确认删除
+           // 1、文件表改为已删除状态
+
+           // 2、置空视频url
+
+
+         }).catch(() => {// 点击取消
+           console.log("已取消");
+         });
+
+       },
+
+
+        /**
+         * 编辑框、新增框点击保存（新增/修改）
+         * 1、防刷控制
+         * 2、参数校验
+         * 3、向后台发ajax请求
+         * 4、重新查询数据(刷新)
+         */
+        saveSection() {
+            //1、防刷控制
+            this.buttonStatus.saveButtonDisabled = true;
+            setTimeout(() => this.buttonStatus.saveButtonDisabled = false, 1000);
+
+            //2、参数校验
+            // ...
+
+            this.editSectionVisible = false;
+            //3、发请求
+            this.$axios.post('http://localhost:9001/admin/sections/section', this.section)
+              .then(res => {
+                  if (res.data.success) {
+                      this.$message.success('保存成功');
+                  } else {
+                      this.$message.success('保存失败，请重新试试');
+                  }
+              }).catch(err => {
+                this.$message.error('保存操作发生系统内部错误');
+                console.error("error = " + err)
+            })
+
+        },
+        // 上传文件相关
+        submitUpload() {
+            this.$refs.upload.submit();
+        },
+        handleRemove(file) {
+            console.log(file);
+        },
+        handlePreview(file) {
+            console.log(file);
+        },
+        /**
+         * 上传视频
+         *
+         */
+        upload(item){
+            console.log(item.file);
+            let file = item.file;
+            let fileFullName = file.name;
+            let lastModified = file.lastModified;
+            let lastModifiedDate = file.lastModifiedDate;
+            let fileSize = file.size;
+            let type = file.type;
+            let suffix = fileFullName.substring(fileFullName.lastIndexOf(".") + 1, fileFullName.length).toLowerCase();
+            let webkitRelativePath = file.webkitRelativePath;
+
+            let fileName = fileFullName.substring(0,fileFullName.lastIndexOf("."));
+            let strKey = fileName + fileSize + type + lastModified + webkitRelativePath + lastModifiedDate;
+            // 转换为md5,作为文件唯一标识
+            let fileKey = this.$md5(strKey);
+
+            // 分片大小
+            let shardSize = 10 * 1024 * 1024;
+            // 文件总分片数
+            let shardCount = fileSize % shardSize == 0 ? Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
+            // 去后台获取该文件的分片下标
+            // let nowShardIndex = this.getShardIndex(fileKey);
+            let nowShardIndex = 1;
+            this.$axios.get('http://localhost:9002/file/key/' + fileKey + '/shardIndex')
+              .then(res => {
+                  if(res.data.success){
+                      nowShardIndex = res.data.data;
+                      if(nowShardIndex == shardCount){
+                          this.uploadProcess = 50;
+                          setTimeout(() => this.uploadProcess = 70,500);
+                          setTimeout(() => this.uploadProcess = 90,500);
+                          setTimeout(() => this.uploadProcess = 100,500);
+                      }
+                      this.sendFileShard(file,nowShardIndex,shardSize);
+                  }else {
+                      this.sendFileShard(file,nowShardIndex,shardSize);
+                  }
+              }).catch(err =>{
+                this.sendFileShard(file,nowShardIndex,shardSize);
+              });
+
+
+        },
+
+
+      checkShard(file,nowShardIndex,shardCount,shardSize){
+          if(nowShardIndex == '' || nowShardIndex == undefined || nowShardIndex == null){
+              nowShardIndex = 1;
+          }
+          //如果该文件已存在，直接提示文件上传成功，返回
+          if(nowShardIndex == shardCount){
+              this.uploadProcess = 50;
+              setTimeout(() => this.uploadProcess = 70,500);
+              setTimeout(() => this.uploadProcess = 90,500);
+              setTimeout(() => this.uploadProcess = 100,500);
+              this.$message.success("视频上传成功");
+              return;
+          }
+          // 从当前分片开始上传
+          this.sendFileShard(file,nowShardIndex,shardSize);
+      },
+
+
+        /**
+         * 向后台传文件分片
+         * 参数
+         * file:文件对象
+         * shardIndex:分片下标
+         * shardSize:分片大小
+         *
+         *对文件进行分割，向后台发送文件分片
+         *
+         */
+        sendFileShard(file,shardIndex,shardSize){
+            let fileFullName = file.name;
+            let lastModified = file.lastModified;
+            let lastModifiedDate = file.lastModifiedDate;
+            let fileSize = file.size;
+            let type = file.type;
+            let suffix = fileFullName.substring(fileFullName.lastIndexOf(".") + 1, fileFullName.length).toLowerCase();
+            let webkitRelativePath = file.webkitRelativePath;
+
+            let fileName = fileFullName.substring(0,fileFullName.lastIndexOf("."));
+            let strKey = fileName + fileSize + type + lastModified + webkitRelativePath + lastModifiedDate;
+            // 转换为md5,作为文件唯一标识
+            let fileKey = this.$md5(strKey);
+
+            let shardCount = fileSize % shardSize == 0 ? Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
+
+            // 分片发请求
+            let fileShard = this.getFileShard(file, shardIndex,shardSize);
+            // 数据表单
+            let formDate = new FormData();
+            formDate.append("fileShard", fileShard);
+            formDate.append("suffix", suffix);
+            formDate.append("fileKey", fileKey);
+            formDate.append("fileSize", fileSize);
+            formDate.append("shardIndex",shardIndex);
+            formDate.append("shardSize",shardSize);
+            formDate.append("shardCount",shardCount);
+
+            let _this = this;
+            // 进度条
+            let process = 0;
+            // 向发送请求
+            this.$axios.post(this.$requestBaseUrl.file + '/file/upload', formDate,{
+                onUploadProgress:function(progressEvent){
+                    // 计算进度条位置
+                    process = (progressEvent.loaded / (progressEvent.total *  shardCount)) * 100;
+                    // 原来的，易理解，但是在运算中精度损失，上传完最后 99.99%
+                    // _this.uploadProcess = 1/shardCount * 100 * (shardIndex - 1) + (progressEvent.loaded / (progressEvent.total *  shardCount)) * 100;
+                    // 进行通分母，整理后，最后不会精度损失
+                    _this.uploadProcess =  100 * (progressEvent.total * (shardIndex - 1) + progressEvent.loaded) / (progressEvent.total *  shardCount) | 0;
+                }
+            })
+              .then(respone => {
+                  if(respone.data.success){
+                      // _this.uploadProcess = _this.uploadProcess + process;
+                      //如果还没到最后一个，发送下一个分片
+                      if(shardIndex < shardCount) {
+                          this.sendFileShard(file, shardIndex + 1, shardSize);
+                      }else {
+                          this.$message.success("上传视频成功");
+                          // 设置视频显示全路径
+                          this.videoUrl = this.$requestBaseUrl.file + respone.data.data;
+                          // 设置保存到数据库的相对路径
+                          this.section.video = respone.data.data;
+                           // 获取视频的时长
+                          let _this = this;
+                          setTimeout(function () {
+                              let ele = document.getElementById("video");
+                              _this.section.duration = parseInt(ele.duration, 10);
+                              console.log("time = " + _this.section.duration);
+                          }, 1500);
+
+                      }
+                  }
+              }).catch(error => {
+                this.$message.error('上传文件失败！');
+            });
+
+        },
+
+        /**
+         * 获取文件分片
+         * @param file 文件对象
+         * @param shardIndex 分片下标
+         * @param shardSize 分片大小
+         */
+        getFileShard(file, shardIndex, shardSize){
+
+            if(shardIndex <= 0){
+                shardIndex = 0;
+            }
+            let fileSize = file.size;
+            // 获取总分片数
+            let shardCount = fileSize % shardSize == 0 ?
+              Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
+
+            if(shardIndex > shardIndex){
+                shardIndex = shardCount;
+            }
+
+            // 当前分片起始位置
+            let start = (shardIndex - 1) * shardSize;
+            // 当前分片结束位置d
+            let end = Math.min(file.size, start + shardSize);
+            // 从文件中截取当前的分片数据
+            let fileShard = file.slice(start, end);
+            return fileShard;
+        },
+
+        /**
+         * 获取开始上传的文件分片下标
+         * 如果后台不存在该文件，返回1
+         * @param key
+         * @returns {Promise<AxiosResponse<any>>}
+         */
+        getShardIndex(key){
+            let _this = this;
+            _this.nowShardIndex = 1;
+             return this.$axios.get('http://localhost:9002/file/key/' + key + '/shardIndex')
+              .then(rep => {
+                  if(rep.data.success){
+                      return rep.data.data;
+                  }else {
+                      return 1;
+                  }
+              }).catch(err =>{return 1});
+        },
+
+
     }
   };
 </script>
@@ -550,6 +922,10 @@
     .cancel-btn {
         position: absolute;
         right: 15px;
+    }
+
+    .upload-demo-css{
+        width: 90px;
     }
 
 </style>
