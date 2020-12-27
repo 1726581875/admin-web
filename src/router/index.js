@@ -55,9 +55,9 @@ const routes = [
                 component: () => import('../views/system/user/Teacher.vue'),
                 meta: { title: '教师管理' }
             },{
-                path: '/section',
-                component: () => import('../views/Section.vue'),
-                meta: { title: '小节管理' }
+                path: '/file',
+                component: () => import('../views/system/fileManage/FileManage'),
+                meta: { title: '文件管理' }
             }
         ]
     },
