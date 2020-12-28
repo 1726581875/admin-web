@@ -44,7 +44,6 @@
             <!-- ============   表格table begin  =================-->
             <el-table
                     :data="moocFileList"
-                    border
                     class="table"
                     size="mini"
                     height="427px"
@@ -57,28 +56,31 @@
             >
                 <el-table-column type="selection" width="55" align="center"/>
                         <el-table-column prop="id" label="id" width="55" align="center"/>
-                        <el-table-column prop="name" label="文件名"/>
-                        <el-table-column prop="filePath" label="视频相对路径"/>
+                        <!--<el-table-column prop="filePath" label="视频相对路径"/>-->
                         <el-table-column prop="fileSize" label="大小"/>
-                        <el-table-column prop="fileSuffix" label="文件后缀"/>
-                        <el-table-column prop="fileKey" label="文件唯一标识"/>
-                        <el-table-column prop="fileType" label="文件类型"/>
-                        <el-table-column prop="shardIndex" label="分片下标"/>
-                        <el-table-column prop="shardCount" label="总共分片数"/>
-                        <el-table-column prop="shardSize" label="分片大小"/>
-                        <el-table-column prop="userId" label="所属用户ID"/>
+                        <!--<el-table-column prop="fileSuffix" label="文件后缀"/>-->
+                       <!-- <el-table-column prop="fileKey" label="文件唯一标识"/>-->
+                        <el-table-column prop="typeName" label="文件类型"/>
+<!--                        <el-table-column prop="shardIndex" label="分片下标"/>
+                        <el-table-column prop="shardCount" label="总共分片数"/>-->
+<!--                        <el-table-column prop="shardSize" label="分片大小"/>-->
                         <el-table-column prop="courseId" label="所属课程ID"/>
-                        <el-table-column prop="status" label="文件状态"/>
-                        <el-table-column prop="createTime" label="创建时间"/>
-                        <el-table-column prop="updateTime" label="修改时间"/>
+                        <el-table-column prop="userId" label="所属用户ID"/>
+                        <el-table-column label="文件状态">
+                         <template slot-scope="scope">
+                         <el-tag size="small" type="success" effect="dark" v-if="scope.row.status ==1 ">正常</el-tag>
+                         <el-tag size="small" type="warning" effect="dark" v-else>已删除</el-tag>
+                         </template>
+                        </el-table-column>
+                        <el-table-column prop="createTime" width="180" label="创建时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
                                 type="text"
                                 size="small"
-                                icon="el-icon-edit"
+                                :icon="scope.row.icon"
                                 @click="handleEdit(scope.$index, scope.row)"
-                        >编辑
+                        >预览
                         </el-button>
                         <el-button
                                 type="text"
@@ -250,6 +252,24 @@
           if (result.success) {
             this.moocFileList = result.data.content;
             this.pageCount = result.data.pageCount;
+            this.moocFileList.forEach(file => {
+
+              //文件类型|1视频、2图片、3未知类型、4txt、5markdowm 5、ppt 6 word 7、excel 8、pdf
+              switch (file.fileType) {
+                case 1:
+                  file.icon = 'el-icon-video-camera';
+                  file.typeName = '视频';
+                  break;
+                case 2:
+                  file.icon = 'el-icon-picture-outline';
+                  file.typeName = '图片';
+                  break;
+                default:
+                  file.icon = 'el-icon-folder\n';
+                  file.typeName = '未知类型';
+              }
+
+            })
           }
         }).catch(err => {
           this.$message.error('发生系统内部错误');

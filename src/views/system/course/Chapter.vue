@@ -72,7 +72,7 @@
                                 </el-table-column>
                                 <el-table-column prop="title" label="小节名称"/>
                                 <el-table-column prop="durationFormat" label="时长" sortable/>
-                                <el-table-column label="操作" width="180" align="center">
+                                <el-table-column label="操作" width="270" align="center">
                                     <template slot-scope="scope">
                                         <el-button
                                           type="text"
@@ -88,6 +88,22 @@
                                           class="#E6A23C"
                                           @click="handleDeleteSection(props.$index,scope.$index, scope.row.id)"
                                         >删除
+                                        </el-button>
+                                        <el-button
+                                          type="text"
+                                          size="small"
+                                          icon="el-icon-caret-top"
+                                          class="#E6A23C"
+                                          @click="sectionMoveUp(props.$index,scope.$index)"
+                                        >上移
+                                        </el-button>
+                                        <el-button
+                                          type="text"
+                                          size="small"
+                                          icon="el-icon-caret-bottom"
+                                          class="#E6A23C"
+                                          @click="sectionMoveDown(props.$index,scope.$index)"
+                                        >下移
                                         </el-button>
                                     </template>
                                 </el-table-column>
@@ -151,7 +167,7 @@
                           size="small"
                           icon="el-icon-caret-top"
                           class="#E6A23C"
-                          @click="handleDeleteChapter(scope.$index, scope.row.id)"
+                          @click="chapterMoveUp(scope.$index)"
                         >上移
                         </el-button>
                         <el-button
@@ -159,7 +175,7 @@
                           size="small"
                           icon="el-icon-caret-bottom"
                           class="#E6A23C"
-                          @click="handleDeleteChapter(scope.$index, scope.row.id)"
+                          @click="chapterMoveDown(scope.$index)"
                         >下移
                         </el-button>
                     </template>
@@ -312,10 +328,43 @@
       },
       methods: {
 
-        getCountTime(chapterId){
-            console.log("chapterId=" + chapterId);
-            return 20;
+        /**
+         * 上移
+         */
+        chapterMoveUp(chapterIndex){
+            if(chapterIndex > 0){
+                let chapter1 = this.chapterList[chapterIndex - 1];
+                let chapter2 = this.chapterList[chapterIndex];
+                this.chapterSortSwap(chapter1.id,chapter1.sort,chapter2.id,chapter2.sort);
+            }
         },
+          /**
+           * 下移
+           */
+          chapterMoveDown(chapterIndex){
+              if(chapterIndex < this.chapterList.length - 1){
+                  let chapter1 = this.chapterList[chapterIndex + 1];
+                  let chapter2 = this.chapterList[chapterIndex];
+                  this.chapterSortSwap(chapter1.id,chapter1.sort,chapter2.id,chapter2.sort);
+              }
+          },
+          /**
+           * chapter交换位置
+           */
+          chapterSortSwap(id1,sort1,id2,sort2){
+            this.$axios.post(this.$requestBaseUrl.core
+              + '/admin/chapters/swap?id1=' + id1 + "&sort1=" + sort1 + "&id2=" + id2 + "&sort2=" + sort2)
+            .then(res => {
+                if(res.data.success){
+                    this.$message.success("交换位置成功");
+                    this.list();
+                }else {
+                    this.$message.info("交换位置失败，请刷新看看");
+                }
+            }).catch(err=>{
+                this.$message.info("交换位置失败，请刷新看看");
+            });
+          },
         /**
          * 取消行内编辑
          */
@@ -585,6 +634,46 @@
      * ==========================================================
      */
 
+
+          /**
+           * 上移
+           */
+          sectionMoveUp(chapterIndex,sectionIndex){
+              if(sectionIndex > 0){
+                  let chapter = this.chapterList[chapterIndex];
+                  let section1 = chapter.sectionList[sectionIndex -1];
+                  let section2 = chapter.sectionList[sectionIndex];
+                  this.sectionSortSwap(section1.id,section1.sort,section2.id,section2.sort);
+                  this.expandChapter(chapter,null);
+              }
+          },
+
+          /**
+           * 下移
+           */
+          sectionMoveDown(chapterIndex,sectionIndex){
+              let chapter = this.chapterList[chapterIndex];
+              if(sectionIndex < chapter.sectionList.length - 1){
+                  let section1 = chapter.sectionList[sectionIndex + 1];
+                  let section2 = chapter.sectionList[sectionIndex];
+                  this.sectionSortSwap(section1.id,section1.sort,section2.id,section2.sort);
+                  this.expandChapter(chapter,null);
+              }
+          },
+
+     sectionSortSwap(id1,sort1,id2,sort2){
+        this.$axios.post(this.$requestBaseUrl.core
+          + '/admin/sections/swap?id1=' + id1 + "&sort1=" + sort1 + "&id2=" + id2 + "&sort2=" + sort2)
+          .then(res => {
+              if(res.data.success){
+                  this.$message.success("交换位置成功");
+              }else {
+                  this.$message.info("交换位置失败，请刷新看看");
+              }
+          }).catch(err=>{
+            this.$message.info("交换位置失败，请刷新看看");
+        });
+    },
 
       /**
        *  点击删除按钮触发
