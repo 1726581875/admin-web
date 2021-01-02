@@ -7,13 +7,13 @@ Vue.use(VueRouter)
 const routes = [
     {
         path: '/',
-        component: () => import(/* webpackChunkName: "home" */ '../components/common/Home.vue'),
+        component: () => import('../components/common/Home.vue'),
         meta: {title: '自述文件'},
         children: [
             {
-                path: '/dashboard',
-                component: () => import('../components/page/Dashboard.vue'),
-                meta: {title: '系统首页'}
+                path: '/monitor',
+                component: () => import('../views/system/monitor/Monitor'),
+                meta: {title: '监控中心'}
             }, {
                 path: '/manager',
                 component: () => import('../views/system/Manager.vue'),
@@ -58,6 +58,10 @@ const routes = [
                 path: '/file',
                 component: () => import('../views/system/fileManage/FileManage'),
                 meta: { title: '文件管理' }
+            },{
+                path: '/charts',
+                component: () => import('../views/system/charts/Charts'),
+                meta: { title: '报表管理' }
             }
         ]
     },

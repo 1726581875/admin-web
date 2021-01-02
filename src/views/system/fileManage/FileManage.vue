@@ -64,8 +64,8 @@
 <!--                        <el-table-column prop="shardIndex" label="分片下标"/>
                         <el-table-column prop="shardCount" label="总共分片数"/>-->
 <!--                        <el-table-column prop="shardSize" label="分片大小"/>-->
-                        <el-table-column prop="courseId" label="所属课程ID"/>
-                        <el-table-column prop="userId" label="所属用户ID"/>
+                        <el-table-column prop="courseName" label="所属课程"/>
+                        <el-table-column prop="userName" label="所属用户"/>
                         <el-table-column label="文件状态">
                          <template slot-scope="scope">
                          <el-tag size="small" type="success" effect="dark" v-if="scope.row.status ==1 ">正常</el-tag>
@@ -89,6 +89,14 @@
                                 class="#E6A23C"
                                 @click="handleDelete(scope.$index, scope.row.id)"
                         >删除
+                        </el-button>
+                        <el-button
+                          type="text"
+                          size="small"
+                          icon="el-icon-download"
+                          class="#E6A23C"
+                          @click="handleDelete(scope.$index, scope.row.id)"
+                        >下载
                         </el-button>
                     </template>
                 </el-table-column>
@@ -245,7 +253,7 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/moocFiles/list', {
+        this.$axios.get(this.$requestBaseUrl.file +  '/fileManage/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
@@ -265,10 +273,10 @@
                   file.typeName = '图片';
                   break;
                 default:
-                  file.icon = 'el-icon-folder\n';
+                  file.icon = 'el-icon-folder';
                   file.typeName = '未知类型';
               }
-
+              file.fileSize = this.convertFileSize(file.fileSize);
             })
           }
         }).catch(err => {
@@ -277,6 +285,34 @@
         });
       },
 
+    convertFileSize(fileSize){
+        let mediaSizeName = '';
+    if (fileSize > 1024 * 1024 * 1024) {
+      let thisnumber = fileSize / 1024 / 1024 / 1024;
+      if (thisnumber.toString().indexOf(".") != -1) {
+        mediaSizeName = thisnumber.toFixed(2) + "G";
+      } else {
+        mediaSizeName = thisnumber + "G";
+      }
+    } else  if (fileSize > 1024 * 1024) {
+      let thisnumber = fileSize / 1024 / 1024;
+      if (thisnumber.toString().indexOf(".") != -1) {
+        mediaSizeName = thisnumber.toFixed(2) + "M";
+      } else {
+        mediaSizeName = thisnumber + "M";
+      }
+    }else if (fileSize > 1024) {
+      let thisnumber = fileSize / 1024
+      if (thisnumber.toString().indexOf('.') != -1) {
+        mediaSizeName = thisnumber.toFixed(2) + 'KB'
+      } else {
+        mediaSizeName = thisnumber + 'KB'
+      }
+    } else {
+      mediaSizeName = fileSize + 'B'
+    }
+    return mediaSizeName;
+  },
       /**
        * 说明：点击查询按钮触发，输入框的查询
        * 1、防刷控制
@@ -327,7 +363,7 @@
        * 根据id删除
        */
       deleteById(id){
-        this.$axios.delete("http://localhost:9001/admin/moocFiles/" + id)
+        this.$axios.delete(this.$requestBaseUrl.file + "/fileManage/" + id)
           .then(res => {
             res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
             this.list();
@@ -387,7 +423,7 @@
         }).then(() => {//当点击确认
 
           //3、发送批量删除请求
-          this.$axios.post("http://localhost:9001/admin/moocFiles/batch/delete", moocFileIdList)
+          this.$axios.post(this.$requestBaseUrl.file + "/fileManage/batch/delete", moocFileIdList)
             .then(res => {
               res.data.success ? this.$message.success(`删除了 ${delMsgStr}`) : this.$message.error('批量删除失败，请刷新后重新试试');
               //延迟一秒执行
@@ -448,7 +484,7 @@
 
           this.editVisible = false;
           //3、发请求
-          this.$axios.post('http://localhost:9001/admin/moocFiles/moocFile', this.moocFile)
+          this.$axios.post(this.$requestBaseUrl.file + '/fileManage/moocFile', this.moocFile)
                   .then(res => {
                       if (res.data.success) {
                           this.$message.success('保存成功');

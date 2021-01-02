@@ -25,6 +25,9 @@ import './assets/css/icon.css';
 import './components/common/directives';
 //-----------------------
 axios.defaults.withCredentials = true
+// 图表
+import echarts from "echarts";
+Vue.prototype.$echarts = echarts;
 
 // 拦截器在请求头部设置token
 axios.interceptors.request.use(function (config) {
