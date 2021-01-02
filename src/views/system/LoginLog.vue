@@ -140,6 +140,9 @@
     },
     methods: {
 
+      /**
+       * 切换日志类型
+       */
       handleClick(tab, event) {
         console.log(tab, event);
       },
@@ -257,103 +260,6 @@
         this.list();
       },
 
-      /**
-       *  点击下线按钮触发该方法
-       */
-      handleDelete(index, account) {
-        let name = this.loginLogList[index].name;
-        // 弹框，二次确认下线
-        this.$confirm(`确定要下线用户 <span style="color: red">${name}</span> 吗`, '提示', {
-          type: 'warning',
-          dangerouslyUseHTMLString: true
-        }).then(() => { // 点击确认下线用户
-          this.offlineUserByAccount(account);
-        }).catch(() => {// 点击取消
-          console.log("已取消");
-        });
-      },
-
-      /**
-       * 根据账号下线用户
-       */
-      offlineUserByAccount(account) {
-        this.$axios.post(this.$requestBaseUrl.authorize + '/onlineUser/offline/' + account)
-          .then(res => {
-            res.data.success ? this.$message.success('成功下线用户') : this.$message.error('下线用户失败，请刷新后重新试试');
-            this.list();
-          }).catch(err => {
-          this.$message.error('下线操作发生异常');
-          console.error("error = " + err)
-        })
-      },
-
-      /**
-       *  多选时触发
-       */
-      handleSelectionChange(val) {
-        this.multipleSelection = val;
-      },
-
-      /**
-       * 说明：点击批量下线按钮时触发
-       *  批量下线,下线已经选择的
-       * 1、获取到要下线的account数组
-       * 2、弹出框，提示信息，二次确认
-       * 3、发ajax，批量下线
-       */
-      deleteSelected() {
-        // 防刷
-        this.buttonStatus.offlineMultipleButtonDisabled = true;
-        setTimeout(() => this.buttonStatus.offlineMultipleButtonDisabled = false, 1000);
-        //参数检测
-        if (this.multipleSelection.length == 0) {
-          this.$message.warning("你还没有选择任何人");
-          return;
-        }
-
-        // 1、获取到要下线的account数组
-        const accountList = [];
-        // 名字 list
-        let delUserNames = [];
-        this.multipleSelection.forEach((user, index) => {
-          // 拿到要下线的account
-          accountList.push(user.account);
-          // 取前五个名字
-          if (index <= 5) {
-            delUserNames.push(user.name);
-          }
-        });
-        let delCount = accountList.length;
-        // 批量下线的名字拼接 String
-        let delMsgStr = delCount <= 5 ? delUserNames.toString() : delUserNames.toString() + '...';
-
-        //2、弹出框，提示信息,二次确认
-        this.$confirm(`确定要批量下线 [<span style="color: red">${delMsgStr}</span>] 一共
-         <span style="color: red">${accountList.length}</span> 列吗?`, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning',
-          dangerouslyUseHTMLString: true
-        }).then(() => {//当点击确认
-
-          //3、发送批量下线请求
-          this.$axios.post(this.$requestBaseUrl.authorize + "/onlineUser/offline/list", accountList)
-            .then(res => {
-              res.data.success ? this.$message.success(`下线了 ${delMsgStr}`) : this.$message.error('批量下线用户失败，请刷新后重新试试');
-              //延迟一秒执行
-              setTimeout(() => this.list(), 1000);
-            })
-            .catch(err => {
-              this.$message.error('批量下线用户发生异常');
-              console.error("error = " + err)
-            })
-
-        }).catch(() => {//当点击取消
-          console.log('批量下线用户已取消');
-        });
-
-        this.multipleSelection = [];
-      },
       // 分页导航
       handlePageChange(val) {
         console.log("val = " + val)
