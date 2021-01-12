@@ -1,8 +1,8 @@
 <template>
   <div class="monitor-container">
     <div style="float: left;width: 100%;height: 180px;margin-top: 0px;">
-      <div id="main1" style="width: 55%;height:94%; float: left"></div>
-      <div id="main2" style="width: 40%;height:94%;float: left"></div>
+      <div id="loginUserChart" style="width: 55%;height:94%; float: left"></div>
+      <div id="courseChart" style="width: 40%;height:94%;float: left"></div>
     </div>
     <div style="float: left;height: 400px; width: 100%;">
       <!--  操作按钮、输入框、    -->
@@ -147,23 +147,37 @@
         },
         activeName: 'first',
 
+        // 图表相关
+        loginUserDate:['01-01','01-02','01-03','01-04','01-05','01-06','01-07'],
+        loginUserAmount:[1,2,3,4,2,1,7],
+        courseDate:['01-01','01-02','01-03','01-04','01-05','01-06','01-07'],
+        courseAmount:[1,5,6,7,2,0,4]
+
       };
     },
     mounted() {
+
+      // 初始化图表
+      //this.initCharts();
+      // 初始化登录数据
+      this.initLoginUserData();
+      this.initCourseData();
       // 设置默认时间，默认查7天前数据
       this.setDefaultTime();
-      // 初始化图表
-      this.initCharts();
       // 初始化数据
       this.list();
     },
     methods: {
-      initCharts() {
+
+      /**
+       * 加载扽了登录人数图表
+       */
+      loadUserLoginAmountChart(){
         // 1、折线图
         // 基于准备好的dom，初始化echarts实例
-        let myChart1 = this.$echarts.init(document.getElementById('main1'));
+        let loginUserChart = this.$echarts.init(document.getElementById('loginUserChart'));
         // 指定图表的配置项和数据
-        let option1 = {
+        let loginUserOption = {
           color: ['#3398DB'],
           grid: {
             top: '3%',
@@ -174,24 +188,28 @@
           xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            data: this.loginUserDate
           },
           yAxis: {
             type: 'value'
           },
           series: [{
-            data: [820, 932, 901, 934, 1290, 1330, 1320],
+            data: this.loginUserAmount,
             type: 'line',
             areaStyle: {}
           }]
         };
         // 使用刚指定的配置项和数据显示图表。
-        myChart1.setOption(option1);
+        loginUserChart.setOption(loginUserOption);
+      },
 
-        // 2、柱状图
-        let myChart2 = this.$echarts.init(document.getElementById('main2'));
+      /**
+       * 加载课程数量图表
+       */
+      loadCurseAmountChart() {
+        let courseChart = this.$echarts.init(document.getElementById('courseChart'));
         // 指定图表的配置项和数据
-        let option2 = {
+        let courseOption = {
           color: ['#3398DB'],
           grid: {
             top: '3%',
@@ -208,7 +226,7 @@
           xAxis: [
             {
               type: 'category',
-              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              data: this.courseDate,
               axisTick: {
                 alignWithLabel: true
               }
@@ -224,15 +242,92 @@
               name: '直接访问',
               type: 'bar',
               barWidth: '60%',
-              data: [10, 52, 200, 334, 390, 330, 220]
+              data: this.courseAmount
             }
           ]
         };
         // 使用刚指定的配置项和数据显示图表。
-        myChart2.setOption(option2);
+        courseChart.setOption(courseOption);
       },
 
+      /**
+       * 初始化图表
+       */
+      initCharts() {
+        // 1、折线图
+        this.loadUserLoginAmountChart();
+        // 2、柱状图
+        this.loadCurseAmountChart();
+      },
+
+
+
       // ================================其他方法=========================================
+
+      /**
+       * 初始化登录人数图表
+       *
+       */
+      initLoginUserData(){
+
+        this.$axios.get(this.$requestBaseUrl.statistics + '/monitor/countLoginUser')
+                .then(res => {
+                  let respResult = res.data;
+                  if(respResult.success){
+                    // 结果转换成map
+                    const dateMap = new Map(Object.entries(respResult.data));
+                    // 获取key和vale 数组
+                    let dateArr = [];
+                    let amountArr = [];
+                    dateMap.forEach((v,k) => {
+                      console.log(k);
+                      dateArr.push(k);
+                      amountArr.push(v);
+                    });
+                    // 赋值给图表对应数据
+                    this.loginUserDate = dateArr;
+                    this.loginUserAmount = amountArr;
+                    // 重新加载图表
+                    this.loadUserLoginAmountChart();
+                  }else {
+                    this.$message.warning("加载系统登录人数异常，请刷新看看。");
+                  }
+                }).catch(err=>{
+                   this.$message.error("加载图表发生内部错误，请刷新看看。")
+             });
+
+      },
+      /**
+       * 初始化新增课程图表
+       */
+      initCourseData(){
+        this.$axios.get(this.$requestBaseUrl.statistics + '/monitor/countNewCourse')
+                .then(res => {
+                  let respResult = res.data;
+                  if(respResult.success){
+                    // 结果转换成map
+                    const dateMap = new Map(Object.entries(respResult.data));
+                    // 获取key和vale 数组
+                    let dateArr = [];
+                    let amountArr = [];
+                    dateMap.forEach((v,k) => {
+                      dateArr.push(k);
+                      amountArr.push(v);
+                    });
+                    // 赋值给图表对应数据
+                    this.courseDate = dateArr;
+                    this.courseAmount = amountArr;
+                    // 重新加载图表
+                    this.loadCurseAmountChart();
+                  }else {
+                    this.$message.warning("加载系统登录人数异常，请刷新看看。");
+                  }
+                }).catch(err=>{
+          this.$message.error("加载图表发生内部错误，请刷新看看。")
+        });
+
+      },
+
 
       /**
        * 检验时间是否合法
