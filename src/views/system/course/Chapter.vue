@@ -586,7 +586,7 @@
 
           this.editVisible = false;
           //3、发请求
-          this.$axios.post('http://localhost:9001/admin/chapters/chapter', this.chapter)
+          this.$axios.post(this.$requestBaseUrl.core + '/admin/chapters/chapter', this.chapter)
                   .then(res => {
                       if (res.data.success) {
                           this.$message.success('保存成功');
@@ -781,6 +781,9 @@
        handleDeleteVideoButton(sectionId,fileId){
 
           let newSectionId = sectionId;
+
+          let newFileId = fileId;
+
           // 1、弹框
          this.$confirm('确定要删除吗？', '提示', {
            type: 'warning'
@@ -789,16 +792,24 @@
 
              // 小结id，如果没有则设为0
              console.log("sectionId=" + sectionId);
+             console.log("fileId=" + fileId);
+
              if(newSectionId == undefined) {
                  newSectionId = 0;
              }
+
+             if(newFileId == undefined || newFileId == null) {
+                 newFileId = 0;
+             }
+
              console.log("sectionId=" + sectionId);
-           this.$axios.delete(this.$requestBaseUrl.file + '/video/delete/ '+ newSectionId + '/' + fileId)
+           this.$axios.delete(this.$requestBaseUrl.file + '/video/delete/ '+ newSectionId + '/' + newFileId)
              .then(res=>{
                  if(res.data.success) {
                      this.$message.success("删除视频成功");
                      // 3、置空视频url
                      this.videoUrl = "";
+                     this.section.video = "";
                      // 初始化文件上传进度条
                      this.uploadProcess = 0;
                      let time = this.section.duration;
@@ -846,7 +857,7 @@
             //2、参数校验
             // ...
             this.editSectionVisible = false;
-            //3、发请求
+            //3、发请求保存章节信息
             this.$axios.post(this.$requestBaseUrl.core + '/admin/sections/section', this.section)
               .then(res => {
                   if (res.data.success) {
@@ -855,8 +866,8 @@
                       // 设置时间
                       this.chapter.duration = durationTime;
                       this.chapter.durationFormat = this.convertTime(durationTime);
-                      // 发请求保存改变的总视频时长
-                      this.$axios.post(this.$requestBaseUrl + '/admin/chapters/chapter', this.chapter);
+                      //4、发请求保存改变的总视频时长
+                      this.$axios.post(this.$requestBaseUrl.core + '/admin/chapters/chapter', this.chapter);
                       // 重新查询section
                       this.expandChapter(this.chapter,null);
                       this.$message.success('保存成功');
