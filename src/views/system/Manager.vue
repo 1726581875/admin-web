@@ -253,10 +253,10 @@
         // 发请求获取全部角色列表
         this.$axios.get('http://localhost:9001/admin/roles/all')
           .then(resp => {
-            let respDate = resp.data;
-            if (respDate.success) {
+            let respData = resp.data;
+            if (respData.success) {
               // 全部角色
-              let allRole = respDate.data;
+              let allRole = respData.data;
               // 当前用户以及具备的角色id
               let roleIdList = [];
               this.roles.forEach(r=>roleIdList.push(r.id));

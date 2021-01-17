@@ -75,9 +75,10 @@
                   localStorage.setItem('token', respResult.data.token);
                   localStorage.setItem('menuList', JSON.stringify(respResult.data.menuList));
                   localStorage.setItem('account', this.param.username);
-                  this.$router.push('/');
+                  this.$router.push('/monitor');
                 }else {
                   this.$message.warning(respResult.msg);
+                  this.updateVerificationCode();
                 }
               });
           } else {
