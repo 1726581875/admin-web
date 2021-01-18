@@ -254,7 +254,29 @@
       },
       onSubmit() {
         console.log('submit!');
-      }
+        this. saveCourse();
+      },
+        /**
+         * 保存课程信息 新增/修改
+         */
+      saveCourse(){
+          let course = this.course;
+          this.$axios.post(this.$requestBaseUrl.core + '/admin/courses/save',course)
+              .then(res=>{
+                  if(res.data.success){
+
+                      this.$message.success('保存课程成功');
+                  }else {
+                      this.$message.info('保存课程失败');
+                  }
+              }).catch(err=>{
+               this.$message.error('保存课程发生异常');
+          });
+
+
+      },
+
+
     }
 
   }

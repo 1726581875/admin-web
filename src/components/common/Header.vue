@@ -5,7 +5,8 @@
             <i v-if="!collapse" class="el-icon-s-fold"></i>
             <i v-else class="el-icon-s-unfold"></i>
         </div>
-        <div class="logo">后台管理系统</div>
+         <div style="display: block"><img src="../../views/system/personalizedSet/images/systemLogo.jpg"/></div>
+        <div class="logo">{{getSystemName}}</div>
         <div class="header-right">
             <div class="header-user-con">
                 <!-- 全屏显示 -->
@@ -52,16 +53,70 @@ export default {
             collapse: true,
             fullscreen: false,
             defaultName: 'xiaomingzhang',
-            message: 2
+            message: 2,
+            systemName: 'MOOC后台管理系统',
         };
     },
     computed: {
+        /**
+         * 获取当前登录账号
+         */
         account() {
             let account = localStorage.getItem('account');
             return account ? account : this.defaultName;
+        },
+        /**
+         * 获取系统名
+         */
+        getSystemName(){
+            this.setSystemName();
+            return this.systemName;
         }
+
     },
     methods: {
+        /**
+         * 获取系统名
+         */
+        setSystemName(){
+            this.$axios.get(this.$requestBaseUrl.core + '/admin/logo/get')
+                .then(res => {
+                    if (res.data.success) {
+                        // 设置系统名
+                        this.systemName = res.data.data.systemName;
+
+                        // 设置浏览器头部favicon、title
+                        let data = res.data.data
+                        let link =
+                            document.querySelector("link[rel*='icon']") ||
+                            document.createElement('link')
+                        link.type = 'image/x-icon'
+                        link.rel = 'shortcut icon'
+                        link.href =
+                            data.faviconPath !== ''
+                                ? '' +
+                                data.faviconPath +
+                                '?time=' +
+                                new Date().getTime()
+                                : '../static/favicon.png'
+                        document.getElementsByTagName('head')[0].appendChild(link)
+                        document.title =
+                            data.systemName !== '' ? data.systemName : '道一云|会话内容存档'
+                    }else {
+                        let link =
+                            document.querySelector("link[rel*='icon']") ||
+                            document.createElement('link')
+                        link.type = 'image/x-icon'
+                        link.rel = 'icon'
+                        link.href = '../static/favicon.png'
+                        document.getElementsByTagName('head')[0].appendChild(link)
+                        document.title = '道一云|会话内容存档'
+                    }
+                })
+                .catch(err => {
+                    this.$message.warning("获取系统名失败");
+                });
+        },
         // 用户名下拉菜单选择事件
         handleCommand(command) {
             if (command == 'loginout') {
@@ -139,6 +194,7 @@ export default {
     line-height: 60px;
 }
 .mooc-header .logo {
+    display: block;
     float: left;
     width: 250px;
     line-height: 60px;
