@@ -185,6 +185,12 @@
             bottom: 0,
             containLabel: true
           },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+              type: 'line'        // 默认为直线，可选为：'line' | 'shadow'
+            }
+          },
           xAxis: {
             type: 'category',
             boundaryGap: false,
@@ -194,6 +200,7 @@
             type: 'value'
           },
           series: [{
+            name: '登录人数',
             data: this.loginUserAmount,
             type: 'line',
             areaStyle: {}
@@ -239,7 +246,7 @@
           ],
           series: [
             {
-              name: '直接访问',
+              name: '新增课程数',
               type: 'bar',
               barWidth: '60%',
               data: this.courseAmount
@@ -456,7 +463,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   .handle-box {
     margin-bottom: 10px;
   }

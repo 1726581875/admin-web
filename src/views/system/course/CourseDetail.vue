@@ -78,7 +78,7 @@
       </el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="onSubmit" size="small">立即创建</el-button>
+      <el-button type="primary" @click="onSubmit" size="small">{{saveButtonName}}</el-button>
       <el-button size="small">取消</el-button>
     </el-form-item>
   </el-form>
@@ -115,11 +115,17 @@
         categoryList: [],
         // 选中的分类
         checkboxGroup: [],
+
+          /** 保存课程按钮 立即创建/确认修改  */
+          saveButtonName: '立即创建'
       }
     },
     created() {
       let courseId = this.$route.params.id;
-      this.findCourseById(courseId);
+      if(courseId != 'add') {
+          this.saveButtonName = '确认修改';
+          this.findCourseById(courseId);
+      }
     },
     methods: {
       /**
@@ -246,11 +252,11 @@
         })
       },
 
+        /**
+         * 点击返回
+         */
       goBack(){
-        console.log("点击了返回");
-        this.$router.push({
-          path: '/courseInfo',
-        })
+          this.$router.push('/courseInfo');
       },
       onSubmit() {
         console.log('submit!');
@@ -264,7 +270,7 @@
           this.$axios.post(this.$requestBaseUrl.core + '/admin/courses/save',course)
               .then(res=>{
                   if(res.data.success){
-
+                      this.$router.push('/courseInfo');
                       this.$message.success('保存课程成功');
                   }else {
                       this.$message.info('保存课程失败');

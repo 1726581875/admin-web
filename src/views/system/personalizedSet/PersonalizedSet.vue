@@ -359,7 +359,7 @@ export default {
   }
 }
 </script>
-<style>
+<style scoped>
 
   .personalizedSet_view {
     position: relative;
@@ -473,7 +473,8 @@ export default {
     background-color: #ffffff;
   }
 
-  .el-upload--text{
+
+  /deep/ .el-upload--text{
     width: 100px;
     height: 100px;
   }

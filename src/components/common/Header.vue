@@ -5,8 +5,12 @@
             <i v-if="!collapse" class="el-icon-s-fold"></i>
             <i v-else class="el-icon-s-unfold"></i>
         </div>
-         <div style="display: block"><img src="../../views/system/personalizedSet/images/systemLogo.jpg"/></div>
-        <div class="logo">{{getSystemName}}</div>
+        <!-- 系统logo图片 -->
+         <div style="display: inline-block;margin-top: 10px;float: left">
+             <img :src="systemLogoUrl" height="40px" style="display: inline-block"/>
+         </div>
+        <!-- 系统名-->
+        <div class="systemName">{{getSystemName}}</div>
         <div class="header-right">
             <div class="header-user-con">
                 <!-- 全屏显示 -->
@@ -55,6 +59,8 @@ export default {
             defaultName: 'xiaomingzhang',
             message: 2,
             systemName: 'MOOC后台管理系统',
+            //系统logo
+            systemLogoUrl: '../../views/system/personalizedSet/images/systemLogo.jpg'
         };
     },
     computed: {
@@ -73,6 +79,7 @@ export default {
             return this.systemName;
         }
 
+
     },
     methods: {
         /**
@@ -82,11 +89,13 @@ export default {
             this.$axios.get(this.$requestBaseUrl.core + '/admin/logo/get')
                 .then(res => {
                     if (res.data.success) {
-                        // 设置系统名
-                        this.systemName = res.data.data.systemName;
 
-                        // 设置浏览器头部favicon、title
                         let data = res.data.data
+                        // 设置系统名
+                        this.systemName = data.systemName;
+                        //设置系统logo
+                        this.systemLogoUrl = this.$requestBaseUrl.core + data.systemLogoPath;
+                        // 设置浏览器头部favicon、title
                         let link =
                             document.querySelector("link[rel*='icon']") ||
                             document.createElement('link')
@@ -94,7 +103,7 @@ export default {
                         link.rel = 'shortcut icon'
                         link.href =
                             data.faviconPath !== ''
-                                ? '' +
+                                ? this.$requestBaseUrl.core +
                                 data.faviconPath +
                                 '?time=' +
                                 new Date().getTime()
@@ -193,8 +202,8 @@ export default {
     cursor: pointer;
     line-height: 60px;
 }
-.mooc-header .logo {
-    display: block;
+ /deep/ .systemName {
+    display: inline-block;
     float: left;
     width: 250px;
     line-height: 60px;

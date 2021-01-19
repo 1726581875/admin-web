@@ -16,7 +16,7 @@
           size="small"
           @click="deleteSelected"
           :disabled="buttonStatus.offlineMultipleButtonDisabled"
-        >批量下线
+        >批量删除
         </el-button>
         <!--  查找输入框 -->
         <el-input
@@ -29,6 +29,14 @@
           icon="el-icon-search"
           :disabled="buttonStatus.searchButtonDisabled"
           @click="handleSearch">搜索
+        </el-button>
+
+        <el-button
+                icon="el-icon-plus"
+                class="handle-add mr10"
+                size="small"
+                @click="handleAddCourse"
+        >新增
         </el-button>
       </div>
 
@@ -237,6 +245,15 @@
         });
       },
 
+      /**
+       * 点击编辑按钮触发，展示编辑框
+       */
+      handleAddCourse(id) {
+        this.$router.push({
+          path: `/courseInfo/add`,
+        });
+      },
+
 
       /**
        * 根据账号下线用户
@@ -260,11 +277,7 @@
       },
 
       /**
-       * 说明：点击批量下线按钮时触发
-       *  批量下线,下线已经选择的
-       * 1、获取到要下线的account数组
-       * 2、弹出框，提示信息，二次确认
-       * 3、发ajax，批量下线
+       * 说明：点击批量删除按钮时触发
        */
       deleteSelected() {
         // 防刷
