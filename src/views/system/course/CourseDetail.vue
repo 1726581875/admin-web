@@ -14,8 +14,9 @@
         action="https://localhost:9002/video/upload"
         :show-file-list="false"
         :on-success="handleAvatarSuccess"
-        :before-upload="beforeAvatarUpload">
-        <img v-if="course.image" :src="course.image" class="avatar">
+        :before-upload="beforeAvatarUpload"
+        :http-request="newWebUrl">
+        <img v-if="imageUrl" :src="imageUrl" class="avatar">
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
     </el-form-item>
@@ -128,6 +129,30 @@
       }
     },
     methods: {
+
+        /**
+         *  自定义http请求
+         */
+        newWebUrl(item) {
+            // 获取上传文件信息
+            let fileObj = item.file;
+            let formData = new FormData();
+            formData.append("file",fileObj);
+            this.$axios.post(this.$requestBaseUrl.file + '/image/upload',formData)
+                .then((res) => {
+                    if (res.data.success) {
+                        this.$message.success('上传课程图片成功!');
+                        this.imageUrl = this.$requestBaseUrl.file + res.data.data;
+                    } else {
+                        this.$message.error('上传课程图片发生异常!')
+                    }
+                }).catch((error) => {
+                console.log(error);
+                this.$message.error('上传课程图片发生异常!')
+            });
+        },
+
+
       /**
        * 点击选择分类触发
        * 展示分类下可选择的标签
