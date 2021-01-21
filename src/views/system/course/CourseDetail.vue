@@ -15,7 +15,7 @@
         :show-file-list="false"
         :on-success="handleAvatarSuccess"
         :before-upload="beforeAvatarUpload"
-        :http-request="newWebUrl">
+        :http-request="uploadImage">
         <img v-if="imageUrl" :src="imageUrl" class="avatar">
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
@@ -133,7 +133,7 @@
         /**
          *  自定义http请求
          */
-        newWebUrl(item) {
+        uploadImage(item) {
             // 获取上传文件信息
             let fileObj = item.file;
             let formData = new FormData();
@@ -143,6 +143,8 @@
                     if (res.data.success) {
                         this.$message.success('上传课程图片成功!');
                         this.imageUrl = this.$requestBaseUrl.file + res.data.data;
+                        this.course.image = res.data.data;
+                        console.log("imageUrl=" + this.imageUrl);
                     } else {
                         this.$message.error('上传课程图片发生异常!')
                     }
@@ -265,14 +267,17 @@
         return isJPG && isLt2M;
       },
 
-
+      /**
+       * 查询课程信息
+       *
+       */
       findCourseById(courseId){
         this.$axios.get(this.$requestBaseUrl.core + '/admin/courses/'+courseId)
         .then(res => {
           if(res.data.success){
             this.course = res.data.data;
             this.tagList =  this.course.tagList;
-            console.log(res.data.data);
+            this.imageUrl = this.$requestBaseUrl.file + this.course.image;
           }
         })
       },
@@ -283,6 +288,9 @@
       goBack(){
           this.$router.push('/courseInfo');
       },
+        /**
+         * 点击提交保存按钮
+         */
       onSubmit() {
         console.log('submit!');
         this. saveCourse();
@@ -292,6 +300,7 @@
          */
       saveCourse(){
           let course = this.course;
+          course.tagList = this.tagList;
           this.$axios.post(this.$requestBaseUrl.core + '/admin/courses/save',course)
               .then(res=>{
                   if(res.data.success){
@@ -353,7 +362,7 @@
     text-align: center;
   }
   .avatar {
-    width: 178px;
+    width: 356px;
     height: 178px;
     display: block;
   }
