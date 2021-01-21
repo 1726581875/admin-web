@@ -11,7 +11,7 @@
     <el-form-item label="课程封面:">
       <el-upload
         class="avatar-uploader"
-        action="https://localhost:9002/video/upload"
+        action="https://localhost:9002/image/upload"
         :show-file-list="false"
         :on-success="handleAvatarSuccess"
         :before-upload="beforeAvatarUpload"
@@ -255,16 +255,17 @@
       
       
       beforeAvatarUpload(file) {
-        const isJPG = file.type === 'image/jpeg';
-        const isLt2M = file.size / 1024 / 1024 < 2;
-
-        if (!isJPG) {
-          this.$message.error('上传头像图片只能是 JPG 格式!');
+        const isLt5M = file.size / 1024 / 1024 < 5
+        const isType = file.type === 'image/jpeg' || file.type === 'image/png'
+        if (!isType) {
+          this.$message.warning('请上传jpg/png类型的图片!');
+          return false
         }
-        if (!isLt2M) {
-          this.$message.error('上传头像图片大小不能超过 2MB!');
+        if (!isLt5M) {
+          this.$message.warning('上传图片大小不能超过 5M!');
+          return false
         }
-        return isJPG && isLt2M;
+        return isType && isLt5M;
       },
 
       /**

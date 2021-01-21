@@ -60,17 +60,24 @@
             <template slot-scope="scope">
               <el-image
                 class="table-td-thumb"
-                src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1607091115606&di=a99240461487fc91ef53cfba5cb47be9&imgtype=0&src=http%3A%2F%2Fa2.att.hudong.com%2F27%2F81%2F01200000194677136358818023076.jpg"
-                :preview-src-list="[scope.row.thumb]"
+                :src="scope.row.imageUrl"
+                :preview-src-list="[scope.row.imageUrl]"
               ></el-image>
             </template>
           </el-table-column>
           <el-table-column prop="id" label="ID" width="55"/>
           <el-table-column prop="name" label="课程名称"/>
           <el-table-column prop="teacherName" label="讲师名字"/>
-          <el-table-column prop="duration" label="时长" width="80"/>
+          <el-table-column prop="durationFormat" label="时长" width="80"/>
           <el-table-column prop="learningNum" label="学习人数" width="80"/>
-          <el-table-column prop="status" label="状态"/>
+          <el-table-column label="状态">
+            <template slot-scope="scope">
+            <el-tag size="small" type="success" effect="dark" v-if="scope.row.status =='正常'">正常</el-tag>
+            <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status =='草稿'">草稿</el-tag>
+              <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status =='禁用'">禁用</el-tag>
+              <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status =='已删除'">已删除</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="createTime" label="创建时间"/>
           <!-- 课程操作 编辑/删除  -->
           <el-table-column label="操作" width="180" align="center">
@@ -179,13 +186,20 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/courses/list', {
+        this.$axios.get(this.$requestBaseUrl.core + '/admin/courses/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
           if (result.success) {
             this.courseList = result.data.content;
             this.pageCount = result.data.pageCount;
+            let basePath = this.$requestBaseUrl.file;
+            this.courseList.forEach(course =>{
+              //拼接要显示的图片路径
+              course.imageUrl = basePath + course.image;
+              //转换时间，格式化成00:00:00格式显示
+              course.durationFormat = this.convertTime(course.duration);
+            });
           }
         }).catch(err => {
           this.$message.error('发生系统内部错误');
@@ -193,6 +207,26 @@
         });
       },
 
+      /**
+       * 转换时间
+       */
+      convertTime(second){
+        let hour = 0;
+        let minute = 0;
+        if(second >= 3600){
+          hour = Math.floor(second / 3600);
+          second = second % 3600;
+        }
+        if(second >= 60){
+          minute = Math.floor(second / 60);
+          second = second % 60;
+        }
+        let timeStr = hour < 10 ? '0' + hour : hour;
+        timeStr = timeStr + ':' + (minute < 10 ? '0' + minute : minute);
+        timeStr = timeStr + ':' + (second < 10 ? '0' + second : second);
+        return timeStr;
+
+      },
       /**
        * 说明：点击查询按钮触发，输入框的查询
        * 1、防刷控制
