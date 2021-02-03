@@ -95,7 +95,7 @@
                           size="small"
                           icon="el-icon-download"
                           class="#E6A23C"
-                          @click="handleDelete(scope.$index, scope.row.id)"
+                          @click="onClickDownloadFile(scope.row.id)"
                         >下载
                         </el-button>
                     </template>
@@ -220,6 +220,10 @@
           this.list();
       },
     methods: {
+
+        onClickDownloadFile(fileId){
+            window.location.href = this.$requestBaseUrl.file + "/fileManage/download/" + fileId;
+        },
 
       //初始化查询条件
       resetQueryParam() {
