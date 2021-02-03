@@ -110,7 +110,7 @@ export default {
                                 : '../static/favicon.png'
                         document.getElementsByTagName('head')[0].appendChild(link)
                         document.title =
-                            data.systemName !== '' ? data.systemName : '道一云|会话内容存档'
+                            data.systemName !== '' ? data.systemName : 'mooc|慕课后台管理系统'
                     }else {
                         let link =
                             document.querySelector("link[rel*='icon']") ||
@@ -119,11 +119,11 @@ export default {
                         link.rel = 'icon'
                         link.href = '../static/favicon.png'
                         document.getElementsByTagName('head')[0].appendChild(link)
-                        document.title = '道一云|会话内容存档'
+                        document.title = 'mooc|慕课后台管理系统'
                     }
                 })
                 .catch(err => {
-                    this.$message.warning("获取系统名失败");
+
                 });
         },
         // 用户名下拉菜单选择事件
