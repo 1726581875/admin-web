@@ -24,6 +24,7 @@ Vue.prototype.$requestBaseUrl = requestBaseUrl
 import './assets/css/icon.css';
 import './components/common/directives';
 //-----------------------
+//允许跨域携带cookie信息
 axios.defaults.withCredentials = true
 // 图表
 import echarts from "echarts";

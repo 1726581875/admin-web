@@ -24,7 +24,7 @@
           <el-input v-model="param.code" placeholder="code">
             <el-button slot="prepend" icon="el-icon-picture-outline"></el-button>
           </el-input>
-          <div @click="updateVerificationCode"><img :src="vcUrl"></div>
+          <div @click="updateVerificationCode"><img :src=""></div>
         </el-form-item>
 
         <div class="login-btn">
