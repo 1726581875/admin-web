@@ -137,6 +137,12 @@ export default {
                           localStorage.removeItem('token');
                           this.$router.push('/login');
                           this.$message.info("登出成功");
+                      }else {
+                          this.$message.warning("登出发生异常");
+                          localStorage.removeItem('account');
+                          localStorage.removeItem('menuList');
+                          localStorage.removeItem('token');
+                          this.$router.push('/login');
                       }
                   })
                 .catch(err => {
