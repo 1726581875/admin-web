@@ -282,6 +282,7 @@
         queryParam: {
         id: null,
         name: null,
+        courseId: null,
         description: null,
           pageIndex: 1,
           pageSize: 10
@@ -321,6 +322,11 @@
       };
     },
       created() {
+          let courseId = this.$route.params.id;
+          if(courseId){
+              console.log('courseId=' + courseId);
+              this.queryParam.courseId = courseId;
+          }
           this.list();
       },
       mounted() {

@@ -47,6 +47,10 @@ const routes = [
                 component: () => import('../views/system/course/Chapter.vue'),
                 meta: { title: '章节管理' }
           },{
+                path: '/:id/chapter',
+                component: () => import('../views/system/course/Chapter.vue'),
+                meta: { title: '章节管理' }
+            }, {
                 path: '/category',
                 component: () => import('../views/system/category/Category.vue'),
                 meta: { title: '分类管理' }

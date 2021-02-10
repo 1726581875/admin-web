@@ -75,7 +75,22 @@
                   localStorage.setItem('token', respResult.data.token);
                   localStorage.setItem('menuList', JSON.stringify(respResult.data.menuList));
                   localStorage.setItem('account', this.param.username);
-                  this.$router.push('/monitor');
+
+
+                  let menuList = respResult.data.menuList;
+                  console.log('menuList=' + menuList);
+                  if((!menuList) || (menuList.length == 0)){
+                    this.$message.warning('你没有任何菜单权限');
+                    return;
+                  }
+                  //加载跳转到第0个菜单
+                  let menu = menuList[0];
+                  console.log('menu.subs=' + menu.subs);
+                  if(menu.subs && menu.subs.length > 0){
+                    this.$router.push('/' + menu.subs[0].index);
+                  }else {
+                    this.$router.push('/' + menu.index);
+                  }
                 }else {
                   this.$message.warning(respResult.msg);
                   this.updateVerificationCode();

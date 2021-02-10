@@ -82,6 +82,13 @@
           <!-- 课程操作 编辑/删除  -->
           <el-table-column label="操作" width="180" align="center">
             <template slot-scope="scope">
+                <el-button
+                  type="text"
+                  size="small"
+                  icon="el-icon-edit"
+                  @click="toChapter(scope.row.id)"
+                >章节
+                </el-button>
               <el-button
                 type="text"
                 size="small"
@@ -371,7 +378,14 @@
         console.log("val = " + val)
         this.$set(this.queryParam, 'pageIndex', val);
         this.list();
+      },
+      /**
+       * 跳转到章节页面
+       */
+      toChapter(courseId){
+        this.$router.push('/'+ courseId +'/chapter');
       }
+
     }
   };
 </script>
