@@ -26,7 +26,7 @@ import './components/common/directives';
 //-----------------------
 //允许跨域携带cookie信息
 axios.defaults.withCredentials = true
-// 图表
+// 图表echarts
 import echarts from "echarts";
 Vue.prototype.$echarts = echarts;
 
