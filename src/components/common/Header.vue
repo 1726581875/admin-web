@@ -39,28 +39,55 @@
                         <i class="el-icon-caret-bottom"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <a href="https://github.com/lin-xin/vue-manage-system" target="_blank">
-                            <el-dropdown-item>项目仓库</el-dropdown-item>
-                        </a>
-                        <el-dropdown-item divided command="loginout">退出登录</el-dropdown-item>
+                        <el-dropdown-item v-if="account != 'admin'"command="showUpdateDialog">修改密码</el-dropdown-item>
+                        <el-dropdown-item divided command="loginOut" >退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
         </div>
+
+        <!-- 修改密码 弹出框   -->
+        <el-dialog title="修改密码" :visible.sync="updatePasswordVisible" width="40%">
+            <el-form ref="chapter" :model="passwordForm" label-width="70px">
+                <el-form-item label="原密码">
+                    <el-input v-model="passwordForm.oldPassword" type="password"></el-input>
+                </el-form-item>
+                <el-form-item label="新密码">
+                    <el-input v-model="passwordForm.newPassword" type="password"></el-input>
+                </el-form-item>
+                <el-form-item label="确认密码">
+                    <el-input v-model="passwordForm.confirmPassword" type="password"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="updatePasswordVisible = false">取 消</el-button>
+                <el-button type="primary"  @click="updatePassword">确 定</el-button>
+            </span>
+        </el-dialog>
+
     </div>
 </template>
 <script>
-import bus from './bus';
+import bus from './bus'
+import { encrypt } from '@/utils/rsaEncrypt'
 export default {
     data() {
         return {
             collapse: true,
             fullscreen: false,
-            defaultName: 'xiaomingzhang',
+            defaultName: 'admin',
             message: 2,
             systemName: 'MOOC后台管理系统',
             //系统logo
-            systemLogoUrl: '../../views/system/personalizedSet/images/systemLogo.jpg'
+            systemLogoUrl: '../../views/system/personalizedSet/images/systemLogo.jpg',
+            //修改管理员密码
+            passwordForm:{
+                oldPassword:null,
+                newPassword:null,
+                confirmPassword:null
+            },
+            //修改密码弹出框
+            updatePasswordVisible:false
         };
     },
     computed: {
@@ -82,6 +109,42 @@ export default {
 
     },
     methods: {
+        updatePassword(){
+
+            if(!this.passwordForm.oldPassword){
+                this.$message.warning('旧密码不能为空');
+                return;
+            }
+            if(!this.passwordForm.newPassword){
+                this.$message.warning('新密码不能为空');
+                return;
+            }
+            if(!this.passwordForm.confirmPassword){
+                this.$message.warning('确认密码不能为空');
+                return;
+            }
+            if(this.passwordForm.confirmPassword != this.passwordForm.newPassword){
+                this.$message.warning('确认密码不一致');
+                return;
+            }
+            let updateForm = {};
+            //加密
+            updateForm.oldPassword = encrypt(this.passwordForm.oldPassword);
+            updateForm.newPassword = encrypt(this.passwordForm.newPassword);
+            updateForm.confirmPassword = encrypt(this.passwordForm.confirmPassword);
+
+            this.$axios.post(this.$requestBaseUrl.authorize + '/manager/updatePassword',updateForm)
+              .then(resp=>{
+                  if(resp.data.success){
+                      this.$message.success('修改密码成功');
+                      this.updatePasswordVisible = false;
+                  }else {
+                      this.$message.warning(resp.data.msg);
+                  }
+              }).catch(err=>{
+                this.$message.error('修改密码失败');
+            })
+        },
         /**
          * 获取系统名
          */
@@ -128,8 +191,8 @@ export default {
         },
         // 用户名下拉菜单选择事件
         handleCommand(command) {
-            if (command == 'loginout') {
-                this.$axios.get('http://localhost:10000/mooc/admin/loginOut')
+            if (command == 'loginOut') {
+                this.$axios.get(this.$requestBaseUrl.core + '/mooc/admin/loginOut')
                   .then(res => {
                       if (res.data.success) {
                           localStorage.removeItem('account');
@@ -149,6 +212,8 @@ export default {
                     this.$message.warning("登出失败");
                     this.$router.push('/login');
                 });
+            }else if(command == 'showUpdateDialog'){
+                this.updatePasswordVisible = true;
             }
         },
         // 侧边栏折叠

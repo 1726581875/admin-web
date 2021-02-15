@@ -203,7 +203,7 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/roles/list', {
+        this.$axios.get(this.$requestBaseUrl.core + '/admin/roles/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
@@ -267,7 +267,7 @@
        * 根据id删除
        */
       deleteById(id){
-        this.$axios.delete("http://localhost:9001/admin/roles/" + id)
+        this.$axios.delete(this.$requestBaseUrl.core +"/admin/roles/" + id)
           .then(res => {
             res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
             this.list();
@@ -327,7 +327,7 @@
         }).then(() => {//当点击确认
 
           //3、发送批量删除请求
-          this.$axios.post("http://localhost:9001/admin/roles/batch/delete", roleIdList)
+          this.$axios.post(this.$requestBaseUrl.core + "/admin/roles/batch/delete", roleIdList)
             .then(res => {
               res.data.success ? this.$message.success(`删除了 ${delMsgStr}`) : this.$message.error('批量删除失败，请刷新后重新试试');
               //延迟一秒执行
@@ -359,17 +359,16 @@
             let newRole = JSON.parse(JSON.stringify(row));
             this.role = newRole;
 
-
-            //获取菜单权限树
-            this.$axios.get('http://localhost:9001/admin/menu/tree')
+            //1、获取菜单权限树
+            this.$axios.get(this.$requestBaseUrl.core + '/admin/menu/tree')
               .then(resp => {
                   if (resp.data.success) {
                       this.menuTree = resp.data.data.children;
                   }
               });
 
-            //查找默认该角色的权限
-            this.$axios.get('http://localhost:9001/admin/roles/' + newRole.id)
+            //2、查找默认该角色的权限
+            this.$axios.get(this.$requestBaseUrl.core + '/admin/roles/' + newRole.id)
               .then(resp => {
                   if (resp.data.success) {
                      /* let respMenuIds = resp.data.data.menuIdList;
@@ -407,7 +406,7 @@
         this.selectedMenu = [];
         this.expandedMenu = [];
         // 查询菜单权限树
-        this.$axios.get('http://localhost:9001/admin/menu/tree')
+        this.$axios.get(this.$requestBaseUrl.core + '/admin/menu/tree')
           .then(resp => {
               if (resp.data.success){
                   this.menuTree = resp.data.data.children;
@@ -441,7 +440,7 @@
         console.log(this.role);
         this.editVisible = false;
         //3、发请求
-        this.$axios.post('http://localhost:9001/admin/roles/role', this.role)
+        this.$axios.post(this.$requestBaseUrl.core + '/admin/roles/role', this.role)
           .then(res => {
             if (res.data.success) {
               this.$message.success('保存成功');
