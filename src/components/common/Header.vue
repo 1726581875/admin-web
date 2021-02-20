@@ -192,7 +192,7 @@ export default {
         // 用户名下拉菜单选择事件
         handleCommand(command) {
             if (command == 'loginOut') {
-                this.$axios.get(this.$requestBaseUrl.core + '/mooc/admin/loginOut')
+                this.$axios.get(this.$requestBaseUrl.authorize + '/mooc/admin/loginOut')
                   .then(res => {
                       if (res.data.success) {
                           localStorage.removeItem('account');
