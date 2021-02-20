@@ -10,7 +10,7 @@
       </div>
       <!--网站logo -->
       <div class="modify_photo">
-        <span class="modify_title">网页logo：</span>
+        <span class="modify_title">网页图标：</span>
         <div class="upload-frame">
           <!-- 上传图片弹框 -->
           <el-upload v-loading="faviconLoading"
@@ -78,7 +78,7 @@
       </div>
       <!-- 登录页logo -->
       <div class="modify_photo">
-        <span class="modify_title">登陆页logo：</span>
+        <span class="modify_title">登陆页背景图：</span>
         <div class="upload-frame">
           <!-- 上传图片弹框 -->
           <el-upload v-loading="loginLogoLoading"

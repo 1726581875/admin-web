@@ -14,7 +14,7 @@
                 <el-input
                         size="small"
                         v-model="inputVale"
-                        placeholder="请输入角色ID或者名称"
+                        placeholder="请输入课程名称/教师名称"
                         class="handle-input mr10"></el-input>
                 <el-button
                         size="small"
@@ -800,16 +800,16 @@
              console.log("sectionId=" + sectionId);
              console.log("fileId=" + fileId);
 
-             if(newSectionId == undefined) {
+             if(!newSectionId) {
                  newSectionId = 0;
              }
 
-             if(newFileId == undefined || newFileId == null) {
+             if(!newFileId) {
                  newFileId = 0;
              }
 
-             console.log("sectionId=" + sectionId);
-           this.$axios.delete(this.$requestBaseUrl.file + '/video/delete/ '+ newSectionId + '/' + newFileId)
+             console.log("newSectionId=" + sectionId + ",newFileId=" + newFileId);
+           this.$axios.delete(this.$requestBaseUrl.file + '/video/delete/'+ newSectionId + '/' + newFileId)
              .then(res=>{
                  if(res.data.success) {
                      this.$message.success("删除视频成功");

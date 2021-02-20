@@ -22,7 +22,7 @@
         <el-input
           size="small"
           v-model="inputVale"
-          placeholder="账号或者昵称匹配"
+          placeholder="请输入课程名称/教师名称"
           class="handle-input mr10"></el-input>
         <el-button
           size="small"
@@ -134,7 +134,7 @@
       return {
         /* 分页查询条件 */
         queryParam: {
-          matchStr: '',
+          name: '',
           pageIndex: 1,
           pageSize: 10
         },
@@ -256,7 +256,7 @@
           return;
         }
         this.resetQueryParam();
-        this.$set(this.queryParam, 'matchStr', inputValue);
+        this.$set(this.queryParam, 'name', inputValue);
         this.list();
       },
 
