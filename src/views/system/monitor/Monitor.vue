@@ -151,7 +151,8 @@
         loginUserDate:['01-01','01-02','01-03','01-04','01-05','01-06','01-07'],
         loginUserAmount:[1,2,3,4,2,1,7],
         courseDate:['01-01','01-02','01-03','01-04','01-05','01-06','01-07'],
-        courseAmount:[1,5,6,7,2,0,4]
+        courseAmount:[1,5,6,7,2,0,4],
+        courseAmountMax: 8,
 
       };
     },
@@ -217,6 +218,21 @@
         let courseChart = this.$echarts.init(document.getElementById('courseChart'));
         // 指定图表的配置项和数据
         let courseOption = {
+          title: {
+            text: '近一周新增课程',
+            textStyle:{
+              //文字颜色
+              color:'#000',
+              //字体风格,'normal','italic','oblique'
+              fontStyle:'normal',
+              //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+              fontWeight:'bold',
+              //字体系列
+              fontFamily:'sans-serif',
+              //字体大小
+              fontSize:12
+            }
+          },
           color: ['#3398DB'],
           grid: {
             top: '3%',
@@ -241,7 +257,10 @@
           ],
           yAxis: [
             {
-              type: 'value'
+              type: 'value',
+              // 最小单位是1
+              minInterval: 1,
+              max: this.courseAmountMax
             }
           ],
           series: [
@@ -317,13 +336,18 @@
                     // 获取key和vale 数组
                     let dateArr = [];
                     let amountArr = [];
+                    let maxValue = 1;
                     dateMap.forEach((v,k) => {
                       dateArr.push(k);
                       amountArr.push(v);
+                      if(v > maxValue){
+                        maxValue = v;
+                      }
                     });
                     // 赋值给图表对应数据
                     this.courseDate = dateArr;
                     this.courseAmount = amountArr;
+                    this.courseAmountMax = maxValue + 1;
                     // 重新加载图表
                     this.loadCurseAmountChart();
                   }else {
