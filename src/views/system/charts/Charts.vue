@@ -10,6 +10,17 @@
 <script>
     export default {
         name: 'Charts',
+        data(){
+            return {
+
+                //饼图，分类占比
+                classificationRatio : [
+                    {name: '分类1', value: 1},
+                    {name: '分类2', value: 1},
+                    {name: '分类3', value: 1}
+                ]
+            }
+        },
         methods:{
             myEcharts(){
                 // 1、柱状图
@@ -55,21 +66,17 @@
                 };
                 // 使用刚指定的配置项和数据显示图表。
                 myChart1.setOption(option1);
-
+//===============================================================================
                 // 2、饼图
                 // 绘制图表。
                 this.$echarts.init(document.getElementById('main2')).setOption({
                     series: {
                         type: 'pie',
-                        data: [
-                            {name: 'A', value: 1212},
-                            {name: 'B', value: 2323},
-                            {name: 'C', value: 1919}
-                        ]
+                        data: this.classificationRatio
                     }
                 });
-
-               // 3、折现图
+//===============================================================================
+               // 3、折线图
                 let myChart3 = this.$echarts.init(document.getElementById('main3'));
                let option3 = {
                     xAxis: {
@@ -86,6 +93,7 @@
                 };
                 myChart3.setOption(option3);
 
+//===============================================================================
                 let myChart4 = this.$echarts.init(document.getElementById('main4'));
                 // 4、三条折线图
                 let option4 = {
@@ -142,12 +150,37 @@
                     ]
                 };
                 myChart4.setOption(option4);
+            },
 
+            initCountClassificationChart(){
+                // 2、饼图
+                // 绘制图表。
+                this.$echarts.init(document.getElementById('main2')).setOption({
+                    series: {
+                        type: 'pie',
+                        data: this.classificationRatio
+                    }
+                });
+            },
 
+            getCountClassification(){
+                this.$axios.get(this.$requestBaseUrl.statistics + '/statistics/classification')
+                  .then(resp=>{
+                    if(resp.data.success){
+                        this.classificationRatio = resp.data.data;
+                        //加载饼图
+                        this.initCountClassificationChart();
+                    }else {
+                        this.$message.warning("获取分类统计失败");
+                    }
+                }).catch(err=>this.$message.error("获取分类统计失败"));
             }
+
         },
         mounted() {
             this.myEcharts();
+            //初始化分类占比数据，饼图
+            this.getCountClassification();
         }
     }
 </script>
