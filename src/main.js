@@ -42,6 +42,18 @@ axios.interceptors.request.use(function (config) {
 }, function (error) {
   return Promise.reject(error);
 });
+//token失效返回登录页
+axios.interceptors.response.use(function (response) {
+  return response
+}, async function (error) {
+  // 1. 如果没有refresh_token,则直接跳转登录页
+  if (error.response && error.response.status === 401) {
+      router.push('/login');
+      return error.response;
+  }
+  return Promise.reject(error)
+});
+
 
 
 new Vue({

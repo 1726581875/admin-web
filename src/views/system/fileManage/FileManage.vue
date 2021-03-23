@@ -260,6 +260,7 @@
         this.$axios.get(this.$requestBaseUrl.file +  '/fileManage/list', {
           params: this.queryParam
         }).then(res => {
+          console.log("res=" +res);
           let result = res.data;
           if (result.success) {
             this.moocFileList = result.data.content;
@@ -282,6 +283,8 @@
               }
               file.fileSize = this.convertFileSize(file.fileSize);
             })
+          }else {
+            this.$message.error(result.msg);
           }
         }).catch(err => {
           this.$message.error('发生系统内部错误');

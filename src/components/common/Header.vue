@@ -157,7 +157,7 @@ export default {
                         // 设置系统名
                         this.systemName = data.systemName;
                         //设置系统logo
-                        this.systemLogoUrl = this.$requestBaseUrl.core + data.systemLogoPath;
+                        this.systemLogoUrl = this.$requestBaseUrl.core + data.systemLogoPath + '?time=' + new Date().getTime();
                         // 设置浏览器头部favicon、title
                         let link =
                             document.querySelector("link[rel*='icon']") ||
