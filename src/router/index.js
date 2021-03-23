@@ -31,6 +31,10 @@ const routes = [
                 component: () => import('../views/system/OnLineUser.vue'),
                 meta: { title: '在线用户管理' }
             },{
+                path: '/ipBlacklist',
+                component: () => import('../views/system/IpBlacklist/IpBlacklist.vue'),
+                meta: { title: 'IP黑名单管理' }
+            },{
                 path: '/personalizedSet',
                 component: () => import('../views/system/personalizedSet/PersonalizedSet'),
                 meta: { title: '系统图标设置' }
