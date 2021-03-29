@@ -31,6 +31,21 @@
                 let myChart1 = this.$echarts.init(document.getElementById('main1'));
                 // 指定图表的配置项和数据
                let option1 = {
+                   title: {
+                       text: '近一月新增课程',
+                       textStyle:{
+                           //文字颜色
+                           color:'#000',
+                           //字体风格,'normal','italic','oblique'
+                           fontStyle:'normal',
+                           //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+                           fontWeight:'bold',
+                           //字体系列
+                           fontFamily:'sans-serif',
+                           //字体大小
+                           fontSize:12
+                       }
+                   },
                     color: ['#3398DB'],
                     tooltip: {
                         trigger: 'axis',
@@ -73,6 +88,21 @@
                 // 2、饼图
                 // 绘制图表。
                 this.$echarts.init(document.getElementById('main2')).setOption({
+                    title: {
+                        text: '课程分类占比',
+                        textStyle:{
+                            //文字颜色
+                            color:'#000',
+                            //字体风格,'normal','italic','oblique'
+                            fontStyle:'normal',
+                            //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+                            fontWeight:'bold',
+                            //字体系列
+                            fontFamily:'sans-serif',
+                            //字体大小
+                            fontSize:12
+                        }
+                    },
                     series: {
                         type: 'pie',
                         data: this.classificationRatio
@@ -82,15 +112,30 @@
                // 3、折线图
                 let myChart3 = this.$echarts.init(document.getElementById('main3'));
                let option3 = {
+                   title: {
+                       text: '近一周评论趋势',
+                       textStyle:{
+                           //文字颜色
+                           color:'#000',
+                           //字体风格,'normal','italic','oblique'
+                           fontStyle:'normal',
+                           //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+                           fontWeight:'bold',
+                           //字体系列
+                           fontFamily:'sans-serif',
+                           //字体大小
+                           fontSize:12
+                       }
+                   },
                     xAxis: {
                         type: 'category',
-                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                        data: ['3-21', '3-22', '3-23', '3-24', '3-25', '3-6', '3-27']
                     },
                     yAxis: {
                         type: 'value'
                     },
                     series: [{
-                        data: [820, 932, 901, 934, 1290, 1330, 1320],
+                        data: [4, 12, 14, 34, 13, 4, 23],
                         type: 'line'
                     }]
                 };
@@ -101,7 +146,7 @@
                 // 4、三条折线图
                 let option4 = {
                     title: {
-                        text: '对数轴示例',
+                        text: '近一周课程趋势',
                         left: 'center'
                     },
                     tooltip: {
@@ -110,13 +155,13 @@
                     },
                     legend: {
                         left: 'left',
-                        data: ['2的指数', '3的指数']
+                        data: ['收藏数', '浏览数']
                     },
                     xAxis: {
                         type: 'category',
                         name: 'x',
                         splitLine: {show: false},
-                        data: ['一', '二', '三', '四', '五', '六', '七', '八', '九']
+                        data: ['3-21', '3-22', '3-23', '3-24', '3-25', '3-6', '3-27']
                     },
                     grid: {
                         left: '3%',
@@ -136,19 +181,14 @@
                     },
                     series: [
                         {
-                            name: '3的指数',
+                            name: '收藏数',
                             type: 'line',
-                            data: [1, 3, 9, 27, 81, 247, 741, 2223, 6669]
+                            data: [1, 3, 9, 27, 81, 74, 12, 50, 123]
                         },
                         {
-                            name: '2的指数',
+                            name: '浏览数',
                             type: 'line',
-                            data: [1, 2, 4, 8, 16, 32, 64, 128, 256]
-                        },
-                        {
-                            name: '1/2的指数',
-                            type: 'line',
-                            data: [1/2, 1/4, 1/8, 1/16, 1/32, 1/64, 1/128, 1/256, 1/512]
+                            data: [1, 2, 1, 8, 16, 32, 24, 128, 256]
                         }
                     ]
                 };

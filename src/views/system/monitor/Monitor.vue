@@ -179,6 +179,21 @@
         let loginUserChart = this.$echarts.init(document.getElementById('loginUserChart'));
         // 指定图表的配置项和数据
         let loginUserOption = {
+          title: {
+            text: '近一周登录人数',
+            textStyle:{
+              //文字颜色
+              color:'#000',
+              //字体风格,'normal','italic','oblique'
+              fontStyle:'normal',
+              //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+              fontWeight:'bold',
+              //字体系列
+              fontFamily:'sans-serif',
+              //字体大小
+              fontSize:12
+            }
+          },
           color: ['#3398DB'],
           grid: {
             top: '3%',
@@ -481,6 +496,9 @@
 
       gotoSee(index,courseId){
         console.log("index=" + index + ",courseId=" + courseId);
+        this.$router.push({
+          path: `/courseInfo/${courseId}`,
+        });
       }
 
     }

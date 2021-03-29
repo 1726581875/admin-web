@@ -1,6 +1,6 @@
 <template>
   <div class="personalizedSet_view">
-    <header class="personalizedSet_header">个性化设置</header>
+    <header class="personalizedSet_header">系统图标设置</header>
     <div class="personalizedSet_cotent ">
       <div class="modify_name">
         <span class="modify_title">系统名称：</span>
@@ -78,7 +78,7 @@
       </div>
       <!-- 登录页logo -->
       <div class="modify_photo">
-        <span class="modify_title">登陆页背景图：</span>
+        <span class="modify_title">登录背景：</span>
         <div class="upload-frame">
           <!-- 上传图片弹框 -->
           <el-upload v-loading="loginLogoLoading"
@@ -130,7 +130,7 @@ export default {
   vuex: {},
   data() {
     return {
-      title: ' 个性化设置',
+      title: ' 系统图标设置',
       systematicName: '',
       limitNum: 1,
       // 前端显示路径
@@ -319,7 +319,7 @@ export default {
         this.$message.warning(warningTip);
         return false
       }
-      this.$confirm('您正在执行个性化设置操作，是否继续？', '提示', {
+      this.$confirm('您正在执行系统图标设置操作，是否继续？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -330,7 +330,7 @@ export default {
         .catch(() => {})
     },
     /**
-     * 确定更新个性化设置
+     * 确定更新系统图标设置
      */
     updateSystemData() {
       let data = {
@@ -348,7 +348,7 @@ export default {
       })
     },
     /**
-     * 取消个性化设置
+     * 取消系统图标设置
      */
     cancelUpdate() {
       this.getSystemData()
@@ -384,7 +384,7 @@ export default {
     padding-left: 32px;
     margin: 0 auto;
     width: 801px;
-    height: 790px;
+    height: 700px;
     background: #ffffff;
     border-radius: 6px;
   }

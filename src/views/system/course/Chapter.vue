@@ -14,7 +14,7 @@
                 <el-input
                         size="small"
                         v-model="inputVale"
-                        placeholder="请输入课程名称/教师名称"
+                        placeholder="请输入课程名称/章节名"
                         class="handle-input mr10"></el-input>
                 <el-button
                         size="small"
@@ -44,11 +44,13 @@
                     row-key="id"
                     header-cell-class-name="table-header"
                     @expand-change="expandChapter"
+                    style="width: 100%"
             >
                 <!-- 表格单元行展开 -->
                 <el-table-column type="expand">
                     <template slot-scope="props">
-                        <div>
+                        <el-form label-position="left" inline class="demo-table-expand">
+                        <div style="width: 100%;background: #ffffff;">
                             <el-button
                               icon="el-icon-plus"
                               class="handle-add mr10"
@@ -63,11 +65,11 @@
                               class="table"
                               size="mini"
                               row-key="id"
-                              style="width: 100%"
+                              style="width: 100%;"
                             >
                                 <el-table-column label="点击播放" width="40" align="center">
                                     <template slot-scope="scope">
-                                        <el-button  size="mini" icon="el-icon-caret-right" circle></el-button>
+                                        <el-button  size="mini" icon="el-icon-caret-right" circle type="success" plain></el-button>
                                     </template>
                                 </el-table-column>
                                 <el-table-column prop="title" label="小节名称"/>
@@ -109,12 +111,13 @@
                                 </el-table-column>
                             </el-table>
                         </div>
+                        </el-form>
                     </template>
                 </el-table-column>
 
                 <!--  Chapter 属性-->
                 <el-table-column prop="courseName" label="所属课程"/>
-                <el-table-column min-width="300px" label="大章名称">
+                <el-table-column min-width="200px" label="章节章名称">
                     <template slot-scope="{row}">
                         <template v-if="row.edit">
                             <el-input v-model="row.name" class="edit-input" size="small" />
@@ -219,10 +222,10 @@
         <el-dialog :title="dialogTitle" :visible.sync="editSectionVisible" width="500px">
             <el-form ref="section" :model="section" label-width="70px">
                 <el-form-item label="所属课程">
-                    <el-link type="primary">{{section.courseId}}</el-link>
+                    <el-link type="primary">{{nowCourseName}}</el-link>
                 </el-form-item>
                 <el-form-item label="所属章节">
-                    <el-link type="primary">{{section.chapterId}}</el-link>
+                    <el-link type="primary">{{nowChapterName}}</el-link>
                 </el-form-item>
                 <el-form-item label="标题">
                     <el-input v-model="section.title"></el-input>
@@ -253,9 +256,9 @@
                     <el-progress :percentage="uploadProcess"></el-progress>
                     </div>
                 </el-form-item>
-                <el-form-item label="时长">
+<!--                <el-form-item label="时长">
                     <span>{{sectionDurationFormat}}</span>
-                </el-form-item>
+                </el-form-item>-->
                 <el-form-item label="顺序">
                     <el-input v-model="section.sort"></el-input>
                 </el-form-item>
@@ -318,14 +321,19 @@
       inputVisible: false,
       inputTagValue: '',
       num: -1,
-      words: ''
+      words: '',
+          //当前点击的大章名
+          nowChapterName : '',
+          nowCourseName : '',
+          courseId: 0,
       };
     },
       created() {
           let courseId = this.$route.params.id;
           if(courseId){
-              console.log('courseId=' + courseId);
+             // console.log('courseId=' + courseId);
               this.queryParam.courseId = courseId;
+              this.courseId = courseId;
           }
           this.list();
       },
@@ -428,6 +436,10 @@
                    row.sectionList = [];
                    this.$message.warning(res.data.msg);
                }
+               //设置当前课程名，章节名
+               this.nowChapterName = row.name;
+               this.nowCourseName = row.courseName;
+               this.courseId = row.courseId;
            }).catch(err => {
              this.$message.warning("系统发生内部错误");
          });
@@ -999,6 +1011,7 @@
             formDate.append("shardIndex",shardIndex);
             formDate.append("shardSize",shardSize);
             formDate.append("shardCount",shardCount);
+            formDate.append("courseId",this.courseId)
 
             let _this = this;
             // 进度条
@@ -1060,19 +1073,16 @@
          * @param shardSize 分片大小
          */
         getFileShard(file, shardIndex, shardSize){
-
-            if(shardIndex <= 0){
+            if (shardIndex <= 0) {
                 shardIndex = 0;
             }
             let fileSize = file.size;
             // 获取总分片数
             let shardCount = fileSize % shardSize == 0 ?
-              Math.floor(fileSize/shardSize) : Math.floor(fileSize/shardSize + 1);
-
-            if(shardIndex > shardIndex){
+              Math.floor(fileSize / shardSize) : Math.floor(fileSize / shardSize + 1);
+            if (shardIndex > shardIndex) {
                 shardIndex = shardCount;
             }
-
             // 当前分片起始位置
             let start = (shardIndex - 1) * shardSize;
             // 当前分片结束位置d
@@ -1169,6 +1179,10 @@
 
     .upload-demo-css{
         width: 90px;
+    }
+
+    /deep/ .el-table__expanded-cell[class*=cell] {
+        padding: 0px;
     }
 
 </style>

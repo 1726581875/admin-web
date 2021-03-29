@@ -44,7 +44,6 @@
             <!-- ============   表格table begin  =================-->
             <el-table
                     :data="moocUserList"
-                    border
                     class="table"
                     size="mini"
                     height="427px"
@@ -56,12 +55,31 @@
                     @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"/>
-                        <el-table-column prop="id" label="ID" width="55" align="center"/>
-                        <el-table-column prop="userIamge" label="用户头像"/>
+                        <!--<el-table-column prop="id" label="ID" width="55" align="center"/>-->
+                        <el-table-column label="头像" align="center">
+                          <template slot-scope="scope">
+                            <el-image
+                              class="table-td-thumb"
+                              :src="scope.row.imageUrl"
+                              :preview-src-list="[scope.row.imageUrl]"
+                            ></el-image>
+                          </template>
+                        </el-table-column>
                         <el-table-column prop="name" label="用户昵称"/>
                         <el-table-column prop="account" label="登录账号"/>
-                        <el-table-column prop="status" label="用户状态"/>
-                        <el-table-column prop="loginTime" label="最近登录时间"/>
+                        <el-table-column label="状态" width="70px">
+                          <template slot-scope="scope">
+                            <el-tag size="small" type="success" effect="dark" v-if="scope.row.status == 1">正常</el-tag>
+                            <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status == 2">禁用</el-tag>
+                            <el-tag size="small" type="danger" effect="dark" v-else-if="scope.row.status ==3">已删除</el-tag>
+                          </template>
+                        </el-table-column>
+                        <el-table-column label="登录时间">
+                          <template slot-scope="scope">
+                           <div v-if="scope.row.loginTime">{{scope.row.loginTime}}</div>
+                            <div v-else>该用户还没登录过</div>
+                          </template>
+                        </el-table-column>
                         <el-table-column prop="createTime" label="注册时间"/>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
@@ -115,21 +133,14 @@
                         <el-form-item label="登录密码">
                             <el-input v-model="moocUser.password"></el-input>
                         </el-form-item>
-                        <el-form-item label="类型，教师/普通用户">
-                            <el-input v-model="moocUser.userType"></el-input>
-                        </el-form-item>
                         <el-form-item label="用户状态">
-                            <el-input v-model="moocUser.status"></el-input>
+                          <el-select v-model="moocUser.status+''" placeholder="用户状态" class="handle-select mr10">
+                            <el-option key="0" label="正常" value="1"></el-option>
+                            <el-option key="1" label="禁用" value="2"></el-option>
+                            <el-option key="2" label="已删除" value="3"></el-option>
+                          </el-select>
                         </el-form-item>
-                        <el-form-item label="最近登录时间">
-                            <el-input v-model="moocUser.loginTime"></el-input>
-                        </el-form-item>
-                        <el-form-item label="创建时间">
-                            <el-input v-model="moocUser.createTime"></el-input>
-                        </el-form-item>
-                        <el-form-item label="修改时间">
-                            <el-input v-model="moocUser.updateTime"></el-input>
-                        </el-form-item>
+
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -147,7 +158,7 @@
         /* 分页查询条件 */
         queryParam: {
         id: null,
-        userIamge: null,
+        userImage: null,
         name: null,
         account: null,
         password: null,
@@ -214,13 +225,16 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/moocUsers/list', {
+        this.queryParam.userType = '普通用户';
+        this.$axios.get(this.$requestBaseUrl.core + '/admin/moocUsers/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
           if (result.success) {
             this.moocUserList = result.data.content;
             this.pageCount = result.data.pageCount;
+            //拼接设置完整图片路径
+            this.moocUserList.forEach(user=>user.imageUrl = this.$requestBaseUrl.file + user.userImage)
           }
         }).catch(err => {
           this.$message.error('发生系统内部错误');
@@ -399,7 +413,7 @@
 
           this.editVisible = false;
           //3、发请求
-          this.$axios.post('http://localhost:9001/admin/moocUsers/moocUser', this.moocUser)
+          this.$axios.post(this.$requestBaseUrl.core + '/admin/moocUsers/moocUser', this.moocUser)
                   .then(res => {
                       if (res.data.success) {
                           this.$message.success('保存成功');

@@ -52,6 +52,13 @@
           :disabled="buttonStatus.searchButtonDisabled"
           @click="handleSearch">搜索
         </el-button>
+        <el-button
+          icon="el-icon-download"
+          class="handle-add float-right"
+          size="small"
+          @click="handleAdd"
+        >导出
+        </el-button>
       </div>
 
       <div style="background: #fff;">
@@ -304,7 +311,9 @@
     width: 40px;
     height: 40px;
   }
-
+  .float-right {
+    float: right;
+  }
   .pagination {
     margin: 20px 0 20px 0;
     text-align: right;

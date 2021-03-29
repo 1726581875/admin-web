@@ -19,6 +19,8 @@ Vue.prototype.$qs = qs
 import requestBaseUrl from './api/projectSetting'
 Vue.prototype.$requestBaseUrl = requestBaseUrl
 
+// 修改 el-dialog 默认点击遮照不关闭
+ElementUI.Dialog.props.closeOnClickModal.default = false
 
 //-----------------------粘贴模板的
 import './assets/css/icon.css';

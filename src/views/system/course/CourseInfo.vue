@@ -266,10 +266,10 @@
       handleDelete(index, account) {
         let name = this.courseList[index].name;
         // 弹框，二次确认下线
-        this.$confirm(`确定要下线用户 <span style="color: red">${name}</span> 吗`, '提示', {
+        this.$confirm(`确定要删除课程 <span style="color: red">${name}</span> 吗`, '提示', {
           type: 'warning',
           dangerouslyUseHTMLString: true
-        }).then(() => { // 点击确认下线用户
+        }).then(() => { // 点击确认删除
           this.offlineUserByAccount(account);
         }).catch(() => {// 点击取消
           console.log("已取消");

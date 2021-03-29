@@ -38,6 +38,13 @@
                         @click="handleAdd"
                 >新增
                 </el-button>
+                <el-button
+                  icon="el-icon-upload2"
+                  class="handle-add float-right"
+                  size="small"
+                  @click="handleAdd"
+                >导入
+                </el-button>
               <el-button
                 icon="el-icon-download"
                 class="handle-add float-right"

@@ -14,7 +14,7 @@
                 <el-input
                         size="small"
                         v-model="inputVale"
-                        placeholder="请输入角色ID或者名称"
+                        placeholder="请输入分类ID/名称"
                         class="handle-input mr10"></el-input>
                 <el-button
                         size="small"
