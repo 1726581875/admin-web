@@ -75,7 +75,7 @@
                   localStorage.setItem('token', respResult.data.token);
                   localStorage.setItem('menuList', JSON.stringify(respResult.data.menuList));
                   localStorage.setItem('account', this.param.username);
-
+                  localStorage.setItem('userId',respResult.data.userId);
 
                   let menuList = respResult.data.menuList;
                   console.log('menuList=' + menuList);

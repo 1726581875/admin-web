@@ -90,6 +90,48 @@ export default {
             updatePasswordVisible:false
         };
     },
+    created() {
+
+
+        //获取用户Id
+        let userId = localStorage.getItem('userId');
+        if(userId) {
+            //检查有多少条未读消息
+            this.checkMessage(userId);
+
+            //建立webSocket连接
+            let websocket = null;
+            if ('WebSocket' in window) {
+                websocket = new WebSocket('ws://'+ this.$requestBaseUrl.webSockUrl +'/webSocket/' + this.userId);
+            } else {
+                alert('该浏览器不支持websocket');
+            }
+            //连接时
+            websocket.onopen = function (event) {
+                console.log('===建立连接websocket连接===');
+            };
+            //关闭时
+            websocket.onclose = function (event) {
+                console.log('===websocke连接关闭====');
+            };
+            //收到信息
+            websocket.onmessage = function (event) {
+                //alert('收到消息：' + event.data);
+                vue.notice = event.data;
+                console.log(event.data);
+                vue.msgUnReadData = 1;
+            };
+            //发生错误弹框
+            websocket.onerror = function (event) {
+                console.log('===websocket通信发生错误！===');
+            };
+            //当关闭窗口关闭websocket
+            window.onbeforeunload = function () {
+                websocket.close();
+            };
+        }
+
+    },
     computed: {
         /**
          * 获取当前登录账号
@@ -106,9 +148,27 @@ export default {
             return this.systemName;
         }
 
-
     },
     methods: {
+
+        /**
+         * 检查有多少条未读消息
+         */
+        checkMessage(userId){
+            this.$axios.get(this.$requestBaseUrl.authorize + '/check?userId='+userId)
+                .then(response => {
+                    //消息数
+                    this.message = response.data;
+                })
+                .catch(function(error) {
+                    console.log(error);
+                });
+
+        },
+
+        /**
+         * 更新密码
+         */
         updatePassword(){
 
             if(!this.passwordForm.oldPassword){
@@ -146,7 +206,7 @@ export default {
             })
         },
         /**
-         * 获取系统名
+         * 获取系统名/系统logo
          */
         setSystemName(){
             this.$axios.get(this.$requestBaseUrl.core + '/admin/logo/get')
@@ -189,8 +249,11 @@ export default {
 
                 });
         },
-        // 用户名下拉菜单选择事件
+        /**
+         * 用户名下拉菜单选择事件
+         */
         handleCommand(command) {
+            //如果选择登出
             if (command == 'loginOut') {
                 this.$axios.get(this.$requestBaseUrl.authorize + '/mooc/admin/loginOut')
                   .then(res => {
@@ -212,6 +275,7 @@ export default {
                     this.$message.warning("登出失败");
                     this.$router.push('/login');
                 });
+                //如果是选择跟新密码
             }else if(command == 'showUpdateDialog'){
                 this.updatePasswordVisible = true;
             }
@@ -247,7 +311,8 @@ export default {
                 }
             }
             this.fullscreen = !this.fullscreen;
-        }
+        },
+
     },
     mounted() {
         if (document.body.clientWidth < 1500) {

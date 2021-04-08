@@ -74,6 +74,10 @@ const routes = [
                 path: '/charts',
                 component: () => import('../views/system/charts/Charts'),
                 meta: { title: '报表管理' }
+            },{
+                path: '/notice',
+                component: () => import('../views/system/notice/Notice'),
+                meta: { title: '消息管理' }
             }
         ]
     },
