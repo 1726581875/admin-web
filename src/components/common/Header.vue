@@ -1,5 +1,10 @@
 <template>
     <div class="mooc-header">
+        <el-alert v-if="isShow"
+                  :title="messageContent"
+                  type="info"
+                  effect="dark">
+        </el-alert>
         <!-- 折叠按钮 -->
         <div class="collapse-btn" @click="collapseChage">
             <i v-if="!collapse" class="el-icon-s-fold"></i>
@@ -87,43 +92,54 @@ export default {
                 confirmPassword:null
             },
             //修改密码弹出框
-            updatePasswordVisible:false
+            updatePasswordVisible:false,
+            isShow: false,
+            messageContent: ''
         };
     },
     created() {
-
-
         //获取用户Id
-        let userId = localStorage.getItem('userId');
-        if(userId) {
+        let user = JSON.parse(localStorage.getItem('user'));
+        if(user) {
+            let userId = user.userId;
+            //type=1 表示管理员 type=2表示为教师
+            let type = user.type;
             //检查有多少条未读消息
             this.checkMessage(userId);
 
             //建立webSocket连接
             let websocket = null;
             if ('WebSocket' in window) {
-                websocket = new WebSocket('ws://'+ this.$requestBaseUrl.webSockUrl +'/webSocket/' + this.userId);
+                websocket = new WebSocket('ws://'+ this.$requestBaseUrl.webSockUrl +'/webSocket/' + type + '/'+ userId);
             } else {
                 alert('该浏览器不支持websocket');
             }
             //连接时
             websocket.onopen = function (event) {
-                console.log('===建立连接websocket连接===');
+                console.log('=== 建立连接websocket连接 ===');
             };
             //关闭时
-            websocket.onclose = function (event) {
-                console.log('===websocke连接关闭====');
+            websocket.onclose = (event) => {
+                console.log('=== websocke连接关闭 ====');
             };
             //收到信息
-            websocket.onmessage = function (event) {
-                //alert('收到消息：' + event.data);
-                vue.notice = event.data;
-                console.log(event.data);
-                vue.msgUnReadData = 1;
+            websocket.onmessage = (event) => {
+                console.log('收到消息：' + event.data);
+                let webSocketMessage = JSON.parse(event.data);
+                //普通提示
+                if(webSocketMessage.type == 1) {
+                    this.$message.success(webSocketMessage.content);
+                //停留提示
+                }else if(webSocketMessage.type == 2){
+                    this.isShow = true;
+                    this.messageContent = webSocketMessage.content;
+                }
+
+
             };
             //发生错误弹框
             websocket.onerror = function (event) {
-                console.log('===websocket通信发生错误！===');
+                console.log('=== websocket通信发生错误！===');
             };
             //当关闭窗口关闭websocket
             window.onbeforeunload = function () {

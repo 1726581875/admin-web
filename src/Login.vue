@@ -76,6 +76,8 @@
                   localStorage.setItem('menuList', JSON.stringify(respResult.data.menuList));
                   localStorage.setItem('account', this.param.username);
                   localStorage.setItem('userId',respResult.data.userId);
+                  //存储整个用户信息
+                  localStorage.setItem('user',JSON.stringify(respResult.data));
 
                   let menuList = respResult.data.menuList;
                   console.log('menuList=' + menuList);
