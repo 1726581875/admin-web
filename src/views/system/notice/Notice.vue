@@ -6,21 +6,29 @@
                     <el-table :data="messageList" :show-header="false" style="width: 100%">
                         <el-table-column>
                             <template slot-scope="scope">
-                                <div v-if="scope.row.courseId && !scope.row.replyId">
+                                <!-- 新增课程通知只有课程Id -->
+                                <div v-if="scope.row.flag == 1">
                                     <a @click="toCourseList"><span class="message-title">{{scope.row.content}}</span></a>
                                 </div>
-                                <div v-if="scope.row.replyId">
-                                    <span class="message-title">{{scope.row.content}}</span>
+                                <!-- 新增课程通知只有课程Id -->
+                                <div v-if="scope.row.flag == 2">
+                                    <span class="mes sage-title">{{scope.row.content}}</span>
                                 </div>
-                                <dev v-if="!scope.row.replyId && !scope.row.courseId">
-                                    <span class="message-title">{{scope.row.content}}</span>
+                                <div v-if="scope.row.flag == 3">
+                                    <span class="mes sage-title">{{scope.row.content}}</span>
+                                </div>
+                                <dev v-if="scope.row.flag == 4">
+                                    <span class="mes sage-title">{{scope.row.content}}</span>
                                 </dev>
                             </template>
                         </el-table-column>
                         <el-table-column prop="createTime" width="180"></el-table-column>
-                        <el-table-column width="120">
+                        <el-table-column width="200">
                             <template slot-scope="scope">
-                                <el-button size="small" @click="handleRead(scope.row.id)">标为已读</el-button>
+                                <el-button size="mini" v-if="scope.row.flag == 1" @click="toCourseList" >查看</el-button>
+                                <el-button size="mini" v-if="scope.row.flag == 2" @click="handleReply(scope.row)" >回复</el-button>
+                                <el-button size="mini" v-if="scope.row.flag == 3" @click="handleReply(scope.row)" >回复</el-button>
+                                <el-button size="mini" @click="handleRead(scope.row.id)">标为已读</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -108,12 +116,38 @@
                 </el-tab-pane>
             </el-tabs>
         </div>
+        <!-- ==========================【消息回复】 弹出框=======================   -->
+        <el-dialog title="消息回复" :visible.sync="replyVisible" width="40%">
+            <el-form ref="reply" :model="reply" label-width="70px">
+                <el-form-item label="课程:">
+                    {{replyMessage.courseName}}
+                </el-form-item>
+                <el-form-item label="用户:">
+                    {{replyMessage.replyName}}
+                </el-form-item>
+                <el-form-item label="内容:">
+                    {{replyMessage.replyContent}}
+                </el-form-item>
+                <el-form-item label="回复:">
+                    <el-input
+                      type="textarea"
+                      :autosize="{ minRows: 2, maxRows: 4}"
+                      placeholder="请输入内容"
+                      v-model="reply.replyContent">
+                    </el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editVisible = false">取 消</el-button>
+                <el-button type="primary" @click="toReply">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
     export default {
-        name: 'notice',
+        name: 'Notice',
         data() {
             return {
                 activeName: 'first',
@@ -136,6 +170,21 @@
                     pageSize: 10
                 },
                 pageCount: 1,
+                //是否显示回复框
+                replyVisible: false,
+                //回复消息展示
+                replyMessage:{
+                    courseName: '《SpringCloud在线教学》',
+                    replyName: '啊啊啊',
+                    replyContent: '你好啊。。'
+                },
+                //回复对象，插入数据库
+                reply:{
+                    courseId: null,
+                    commentId: null,
+                    replyId: null,
+                    replyContent:'',
+                }
             }
         },
         created() {
@@ -233,8 +282,8 @@
                 this.listMessage();
             },
             toCourseList(){
-                this.$router.push('/courseInfo');
                 sessionStorage.setItem('selectValue','未审核');
+                this.$router.push('/courseInfo');
             },
             /**
              * 统计消息数
@@ -292,8 +341,32 @@
                 }).catch(err=>{
                     this.$message.error("更改消息状态失败");
                 })
-            }
+            },
+            handleReply(row) {
 
+                let replyMessage = row;
+                //如果是课程评论
+                if(replyMessage.flag === 2){
+                    this.reply.replyId = replyMessage.replyId;
+
+                }else if(replyMessage.flag === 3){
+                    //如果是回复
+                }
+                //为对象分配一个新地址，改变也不影响原来的值
+/*                let newCategory = JSON.parse(JSON.stringify(row));
+                this.category = newCategory;*/
+                // 展示编辑框
+                this.replyVisible = true;
+            },
+            /**
+             * id 对应回复id或者commentId
+             * flag=1是commentId，flag=2是reply
+             */
+            toReply(){
+
+
+
+            },
 
         },
         computed: {
