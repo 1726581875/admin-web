@@ -53,7 +53,7 @@
           password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
           code: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
         },
-        vcUrl: this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date(),
+        vcUrl: this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date().getTime(),
 
       };
     },

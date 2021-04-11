@@ -31,6 +31,14 @@
           @click="handleSearch">搜索
         </el-button>
 
+        <el-select v-model="selectValue" placeholder="查询条件" class="handle-select mr10"  size="small" @change="list">
+          <el-option key="0" label="全部" value="全部"></el-option>
+          <el-option key="1" label="正常" value="正常"></el-option>
+          <el-option key="2" label="未审核" value="未审核"></el-option>
+          <el-option key="3" label="禁用" value="禁用"></el-option>
+          <el-option key="4" label="已删除" value="已删除"></el-option>
+        </el-select>
+
         <el-button
                 icon="el-icon-plus"
                 class="handle-add mr10"
@@ -65,17 +73,17 @@
               ></el-image>
             </template>
           </el-table-column>
-          <el-table-column prop="id" label="ID" width="55"/>
           <el-table-column prop="name" label="课程名称"/>
           <el-table-column prop="teacherName" label="讲师名字"/>
           <el-table-column prop="durationFormat" label="时长" width="80"/>
           <el-table-column prop="learningNum" label="学习人数" width="80"/>
           <el-table-column label="状态">
             <template slot-scope="scope">
-            <el-tag size="small" type="success" effect="dark" v-if="scope.row.status =='正常'">正常</el-tag>
-            <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status =='草稿'">草稿</el-tag>
-              <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status =='禁用'">禁用</el-tag>
-              <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status =='已删除'">已删除</el-tag>
+              <el-tag size="small" type="success" effect="dark" v-if="scope.row.status =='正常'">正常</el-tag>
+              <el-tag size="small" type="warning" effect="dark" v-if="scope.row.status =='未审核'">未审核</el-tag>
+              <el-tag size="small" type="danger" effect="dark" v-if="scope.row.status =='禁用'">禁用</el-tag>
+              <el-tag size="small" type="danger" effect="dark" v-if="scope.row.status =='已删除'">已删除</el-tag>
+              <el-tag size="small" type="danger" effect="dark" v-if="scope.row.status =='审核不通过'">审核不通过</el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间"/>
@@ -134,6 +142,7 @@
       return {
         /* 分页查询条件 */
         queryParam: {
+          status: 1,
           name: '',
           pageIndex: 1,
           pageSize: 10
@@ -152,6 +161,8 @@
           offlineMultipleButtonDisabled: false,
           searchButtonDisabled: false,
         },
+        //选择框选择的值
+        selectValue: '全部'
 
       };
     },
@@ -193,6 +204,20 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
+        //判断选择框里的选择
+        if(this.selectValue == '未审核'){
+          this.queryParam.status = 0;
+        }else if(this.selectValue == '禁用'){
+          this.queryParam.status = 2;
+        }else if(this.selectValue == '已删除'){
+          this.queryParam.status = 3;
+        }else if(this.selectValue == '正常'){
+          this.queryParam.status = 1;
+        }else {
+          //查询全部状态
+          this.queryParam.status = null;
+        }
+
         this.$axios.get(this.$requestBaseUrl.core + '/admin/courses/list', {
           params: this.queryParam
         }).then(res => {
@@ -330,12 +355,12 @@
           return;
         }
 
-        // 1、获取到要下线的account数组
+        // 1、获取到要删除的数组
         const accountList = [];
         // 名字 list
         let delUserNames = [];
         this.multipleSelection.forEach((user, index) => {
-          // 拿到要下线的account
+          // 拿到要删除的account
           accountList.push(user.account);
           // 取前五个名字
           if (index <= 5) {

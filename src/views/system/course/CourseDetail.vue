@@ -20,8 +20,23 @@
         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
     </el-form-item>
-    <el-form-item label="是否启用:">
-      <el-switch v-model="form.delivery"></el-switch>
+    <el-form-item label="状态" v-if="isUpdate">
+      <el-tag size="small" type="success" effect="dark" v-if="course.status =='正常'">正常</el-tag>
+      <el-tag size="small" type="warning" effect="dark" v-if="course.status =='未审核'">未审核</el-tag>
+      <el-tag size="small" type="danger" effect="dark" v-if="course.status =='禁用'">禁用</el-tag>
+      <el-tag size="small" type="danger" effect="dark" v-if="course.status =='已删除'">已删除</el-tag>
+      <el-tag size="small" type="danger" effect="dark" v-if="course.status =='审核不通过'">审核不通过</el-tag>
+      <span v-if="isManager">
+        <el-select v-model="course.status" placeholder="更改状态" class="handle-select mr10"
+                   size="small" style="margin-left:10px; width: 100px">
+          <el-option key="0" label="正常" value="正常"></el-option>
+          <el-option key="1" label="未审核" value="未审核"></el-option>
+          <el-option key="2" label="禁用" value="禁用"></el-option>
+          <el-option key="3" label="已删除" value="已删除"></el-option>
+          <el-option key="4" label="审核不通过" value="审核不通过"></el-option>
+        </el-select>
+         <el-button size="small" @click="changeCourseStatus" style="margin-left: 10px">修改状态</el-button>
+      </span>
     </el-form-item>
     <el-form-item label="分类标签:">
       <!-- ============= 已有的课程标签列表============== -->
@@ -118,7 +133,15 @@
         checkboxGroup: [],
 
           /** 保存课程按钮 立即创建/确认修改  */
-          saveButtonName: '立即创建'
+         saveButtonName: '立即创建',
+         /**
+          * 是更新=true,新增=false
+          */
+         isUpdate: true,
+        /**
+         * 是否是管理员
+         */
+        isManager: false,
       }
     },
     created() {
@@ -126,7 +149,19 @@
       if(courseId != 'add') {
           this.saveButtonName = '确认修改';
           this.findCourseById(courseId);
+          this.isUpdate = true;
+      }else {
+        this.isUpdate = false;
       }
+      //检查是否是管理员
+      let user = localStorage.getItem('user');
+      if(user){
+        let loginUser = JSON.parse(user);
+        //转态1是管理员，状态2是教师
+        this.isManager = loginUser.type == 1 ? true : false;
+      }
+
+
     },
     methods: {
 
@@ -316,6 +351,22 @@
 
 
       },
+      /**
+       * 更改课程状态
+       */
+      changeCourseStatus(){
+        this.$axios.post(this.$requestBaseUrl.core + '/admin/courses/changeStatus',this.course)
+          .then(res=>{
+            if(res.data.success){
+              this.$message.success(res.data.msg);
+            }else {
+              this.$message.info(res.data.msg);
+            }
+          }).catch(err=>{
+          this.$message.error('更改课程状态发生异常');
+        });
+
+      }
 
 
     }

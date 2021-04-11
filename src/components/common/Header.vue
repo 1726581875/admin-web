@@ -28,14 +28,14 @@
                 <div class="btn-bell">
                     <el-tooltip
                         effect="dark"
-                        :content="message?`有${message}条未读消息`:`消息中心`"
+                        :content="messageNum?`有${messageNum}条未读消息`:`消息中心`"
                         placement="bottom"
                     >
                         <router-link to="/notice">
                             <i class="el-icon-bell"></i>
                         </router-link>
                     </el-tooltip>
-                    <span class="btn-bell-badge" v-if="message"></span>
+                    <span class="btn-bell-badge" v-if="messageNum != 0"></span>
                 </div>
                 <!-- 用户名下拉菜单 -->
                 <el-dropdown class="user-name" trigger="click" @command="handleCommand">
@@ -81,7 +81,7 @@ export default {
             collapse: true,
             fullscreen: false,
             defaultName: 'admin',
-            message: 2,
+            messageNum: 2,
             systemName: 'MOOC后台管理系统',
             //系统logo
             systemLogoUrl: '../../views/system/personalizedSet/images/systemLogo.jpg',
@@ -135,6 +135,8 @@ export default {
                     this.messageContent = webSocketMessage.content;
                 }
 
+               //检查有多少条未读消息
+                this.checkMessage();
 
             };
             //发生错误弹框
@@ -170,14 +172,18 @@ export default {
         /**
          * 检查有多少条未读消息
          */
-        checkMessage(userId){
-            this.$axios.get(this.$requestBaseUrl.authorize + '/check?userId='+userId)
+        checkMessage(){
+            this.$axios.get(this.$requestBaseUrl.notice + '/notice/count')
                 .then(response => {
-                    //消息数
-                    this.message = response.data;
+                    if(response.data.success) {
+                        //消息数
+                        this.messageNum = response.data.data;
+                    }else {
+                        this.$message.warning("统计消息总数失败");
+                    }
                 })
                 .catch(function(error) {
-                    console.log(error);
+                    this.$message.error("统计消息总数失败");
                 });
 
         },

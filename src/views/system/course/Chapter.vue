@@ -336,6 +336,12 @@
               this.courseId = courseId;
           }
           this.list();
+
+          //如果是从消息通知跳转过来，默认看出未审核的课程
+          let selectValue = sessionStorage.getItem('selectValue');
+          if(selectValue){
+              this.selectValue = selectValue;
+          }
       },
       mounted() {
 
