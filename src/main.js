@@ -52,8 +52,10 @@ axios.interceptors.response.use(function (response) {
 }, async function (error) {
   // 1. 如果没有refresh_token,则直接跳转登录页
   if (error.response && error.response.status === 401) {
+     // this.$message.warning("token失效");
       router.push('/login');
-      return error.response;
+      //return error.response;
+    return ;
   }
   return Promise.reject(error)
 });

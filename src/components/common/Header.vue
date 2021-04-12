@@ -108,7 +108,7 @@ export default {
             //修改密码弹出框
             updatePasswordVisible:false,
             isShowStayMessage: false,
-            confirmMsgVisible:true,
+            confirmMsgVisible: false,
             messageContent: 'test message'
         };
     },
