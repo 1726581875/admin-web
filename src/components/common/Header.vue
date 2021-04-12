@@ -1,10 +1,12 @@
 <template>
     <div class="mooc-header">
-        <el-alert v-if="isShow"
-                  :title="messageContent"
+        <el-alert v-if="isShowStayMessage"
                   type="info"
-                  effect="dark">
+                  effect="dark"
+                  @close="closeStayHeadMessage"
+        > {{messageContent}}<a href="javascript:void(0)" @click="toNotice"> 去看看</a>
         </el-alert>
+
         <!-- 折叠按钮 -->
         <div class="collapse-btn" @click="collapseChage">
             <i v-if="!collapse" class="el-icon-s-fold"></i>
@@ -51,7 +53,7 @@
             </div>
         </div>
 
-        <!-- 修改密码 弹出框   -->
+        <!-- 修改密码 弹出框1   -->
         <el-dialog title="修改密码" :visible.sync="updatePasswordVisible" width="40%">
             <el-form ref="chapter" :model="passwordForm" label-width="70px">
                 <el-form-item label="原密码">
@@ -67,6 +69,18 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="updatePasswordVisible = false">取 消</el-button>
                 <el-button type="primary"  @click="updatePassword">确 定</el-button>
+            </span>
+        </el-dialog>
+        <!-- 弹出框2 消息通知-->
+        <el-dialog title="消息通知" :visible.sync="confirmMsgVisible" width="40%">
+            <el-form ref="reply" label-width="70px">
+                <el-form-item>
+                    {{messageContent}}
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="confirmMsgVisible = false">取 消</el-button>
+                <el-button type="primary" @click="confirmMsg()">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -93,8 +107,9 @@ export default {
             },
             //修改密码弹出框
             updatePasswordVisible:false,
-            isShow: false,
-            messageContent: ''
+            isShowStayMessage: false,
+            confirmMsgVisible:true,
+            messageContent: 'test message'
         };
     },
     created() {
@@ -131,8 +146,14 @@ export default {
                     this.$message.success(webSocketMessage.content);
                 //停留提示
                 }else if(webSocketMessage.type == 2){
-                    this.isShow = true;
-                    this.messageContent = webSocketMessage.content;
+                    console.log('接收到停留消息，content=' + webSocketMessage.content)
+                    this.isShowStayMessage = true;
+                    this.messageContent = '你有一条新消息：' + webSocketMessage.content;
+                }else if(webSocketMessage.type == 3){
+                    //弹框消息
+                    console.log('接收到弹框消息，content=' + webSocketMessage.content)
+                    this.confirmMsgVisible = true;
+                    this.messageContent = '你有一条新消息：' + webSocketMessage.content;
                 }
 
                //检查有多少条未读消息
@@ -168,6 +189,20 @@ export default {
 
     },
     methods: {
+        confirmMsg(){
+            this.confirmMsgVisible = false;
+            console.log('点击了确认消息..');
+        },
+        toNotice(){
+            this.isShowStayMessage = false;
+            this.$router.push('/notice');
+        },
+        /**
+         * 点击关闭StayHeadMessage信息时触发
+         */
+        closeStayHeadMessage(){
+            this.isShowStayMessage = false;
+        },
 
         /**
          * 检查有多少条未读消息
