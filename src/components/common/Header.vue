@@ -4,7 +4,7 @@
                   type="info"
                   effect="dark"
                   @close="closeStayHeadMessage"
-        > {{messageContent}}<a href="javascript:void(0)" @click="toNotice"> 去看看</a>
+        > {{webSockMessage.content}}<a href="javascript:void(0)" @click="toNotice"> 去看看</a>
         </el-alert>
 
         <!-- 折叠按钮 -->
@@ -75,7 +75,7 @@
         <el-dialog title="消息通知" :visible.sync="confirmMsgVisible" width="40%">
             <el-form ref="reply" label-width="70px">
                 <el-form-item>
-                    {{messageContent}}
+                    {{webSockMessage.content}}
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -107,8 +107,16 @@ export default {
             },
             //修改密码弹出框
             updatePasswordVisible:false,
+            //是否展示头部停留消息
             isShowStayMessage: false,
+            //是否展示确认消息
             confirmMsgVisible: false,
+            //webSock消息内容
+            webSockMessage:{
+                type: 1,
+                content: 'test message'
+            },
+            //消息内容
             messageContent: 'test message'
         };
     },
@@ -141,19 +149,23 @@ export default {
             websocket.onmessage = (event) => {
                 console.log('收到消息：' + event.data);
                 let webSocketMessage = JSON.parse(event.data);
-                //普通提示
+                this.webSockMessage = webSocketMessage;
+
+                //分析消息内容
                 if(webSocketMessage.type == 1) {
+                    //普通提示
                     this.$message.success(webSocketMessage.content);
-                //停留提示
                 }else if(webSocketMessage.type == 2){
+                    //停留提示
                     console.log('接收到停留消息，content=' + webSocketMessage.content)
                     this.isShowStayMessage = true;
                     this.messageContent = '你有一条新消息：' + webSocketMessage.content;
                 }else if(webSocketMessage.type == 3){
-                    //弹框消息
+                    //弹框消息,踢除下线
                     console.log('接收到弹框消息，content=' + webSocketMessage.content)
                     this.confirmMsgVisible = true;
                     this.messageContent = '你有一条新消息：' + webSocketMessage.content;
+                    return;
                 }
 
                //检查有多少条未读消息
@@ -190,6 +202,9 @@ export default {
     },
     methods: {
         confirmMsg(){
+            if(this.webSockMessage.type == 3){
+                this.$router.push('/login');
+            }
             this.confirmMsgVisible = false;
             console.log('点击了确认消息..');
         },
@@ -217,7 +232,7 @@ export default {
                         this.$message.warning("统计消息总数失败");
                     }
                 })
-                .catch(function(error) {
+                .catch(error=>{
                     this.$message.error("统计消息总数失败");
                 });
 
