@@ -123,7 +123,7 @@
                     {{replyMessage.courseName}}
                 </el-form-item>
                 <el-form-item label="用户:">
-                    {{replyMessage.replyName}}
+                    {{replyMessage.fromUserName}}
                 </el-form-item>
                 <el-form-item label="内容:">
                     {{replyMessage.replyContent}}
@@ -133,7 +133,7 @@
                       type="textarea"
                       :autosize="{ minRows: 2, maxRows: 4}"
                       placeholder="请输入内容"
-                      v-model="reply.replyContent">
+                      v-model="reply.content">
                     </el-input>
                 </el-form-item>
             </el-form>
@@ -175,15 +175,18 @@
                 //回复消息展示
                 replyMessage:{
                     courseName: '《SpringCloud在线教学》',
-                    replyName: '啊啊啊',
+                    fromUserName: '啊啊啊',
                     replyContent: '你好啊。。'
                 },
                 //回复对象，插入数据库
                 reply:{
                     courseId: null,
-                    commentId: null,
-                    replyId: null,
-                    replyContent:'',
+                    commentId: '',
+                    replyId: '',
+                    userId: null,
+                    toUserId: null,
+                    type: null,
+                    content:'',
                 }
             }
         },
@@ -342,16 +345,30 @@
                     this.$message.error("更改消息状态失败");
                 })
             },
+            /**
+             * 点击回复按钮
+             * @param row
+             */
             handleReply(row) {
-
+                this.reply.content = '';
                 let replyMessage = row;
-                //如果是课程评论
-                if(replyMessage.flag === 2){
-                    this.reply.replyId = replyMessage.replyId;
 
+                if(replyMessage.flag === 2){
+                    //如果是课程评论
+                    this.reply.commentId = replyMessage.commentId;
+                    console.log('课程评论=' + replyMessage.commentId)
                 }else if(replyMessage.flag === 3){
                     //如果是回复
+                    this.reply.replyId = replyMessage.replyId;
+                    console.log('课程回复=' + replyMessage.replyId)
                 }
+                //设置参数
+                this.reply.courseId = replyMessage.courseId;
+                this.reply.userId = replyMessage.acceptId;
+                this.reply.toUserId = replyMessage.sendId;
+                this.reply.type = 0;
+                //查询评论详情
+                this.getReplyDetail(replyMessage.id);
                 //为对象分配一个新地址，改变也不影响原来的值
 /*                let newCategory = JSON.parse(JSON.stringify(row));
                 this.category = newCategory;*/
@@ -363,9 +380,32 @@
              * flag=1是commentId，flag=2是reply
              */
             toReply(){
-
-
-
+                this.$axios.post(this.$requestBaseUrl.core + '/comment/insert',{},{
+                    params: this.reply
+                })
+                .then(resp=>{
+                    if(resp.data.success){
+                        this.$message.error("回复评论成功")
+                        this.replyVisible = false;
+                    }else {
+                        this.$message.warning("回复评论失败");
+                    }
+                }).catch(error=>{
+                   this.$message.error("回复评论失败");
+                });
+            },
+            getReplyDetail(id){
+                this.$axios.get(this.$requestBaseUrl.notice + '/notice/reply/detail?id=' + id)
+                  .then(response => {
+                      if(response.data.success) {
+                        this.replyMessage = response.data.data;
+                      }else {
+                          this.$message.warning("统计消息总数失败");
+                      }
+                  })
+                  .catch(function(error) {
+                      this.$message.error("统计消息总数失败");
+                  });
             },
 
         },
