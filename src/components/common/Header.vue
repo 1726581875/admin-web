@@ -3,8 +3,10 @@
         <el-alert v-if="isShowStayMessage"
                   type="info"
                   effect="dark"
-                  @close="closeStayHeadMessage"
-        > {{webSockMessage.content}}<a href="javascript:void(0)" @click="toNotice"> 去看看</a>
+                  @close="closeStayHeadMessage">
+            <span style="margin-left: 200px"> {{webSockMessage.content}}
+            <a href="javascript:void(0)" @click="toNotice"> 去看看</a>
+                </span>
         </el-alert>
 
         <!-- 折叠按钮 -->
@@ -101,12 +103,12 @@ export default {
             systemLogoUrl: '../../views/system/personalizedSet/images/systemLogo.jpg',
             //修改管理员密码
             passwordForm:{
-                oldPassword:null,
-                newPassword:null,
-                confirmPassword:null
+                oldPassword: null,
+                newPassword: null,
+                confirmPassword: null
             },
             //修改密码弹出框
-            updatePasswordVisible:false,
+            updatePasswordVisible: false,
             //是否展示头部停留消息
             isShowStayMessage: false,
             //是否展示确认消息

@@ -167,7 +167,7 @@
                 queryParam: {
                     status : 0,
                     pageIndex: 1,
-                    pageSize: 10
+                    pageSize: 7
                 },
                 pageCount: 1,
                 //是否显示回复框
@@ -382,10 +382,9 @@
             toReply(){
                 this.$axios.post(this.$requestBaseUrl.core + '/comment/insert',{},{
                     params: this.reply
-                })
-                .then(resp=>{
+                }).then(resp=>{
                     if(resp.data.success){
-                        this.$message.error("回复评论成功")
+                        this.$message.success("回复评论成功");
                         this.replyVisible = false;
                     }else {
                         this.$message.warning("回复评论失败");
