@@ -24,10 +24,11 @@
                 </el-button>
 
                 <el-button
+                        v-if="isShowAddChapter"
                         icon="el-icon-plus"
                         class="handle-add mr10"
                         size="small"
-                        @click="handleAdd"
+                        @click="handleAddChapter"
                 >新增
                 </el-button>
             </div>
@@ -203,18 +204,18 @@
         </div>
 
         <!-- ==========================【修改/插入】 Chapter 大章 弹出框=======================   -->
-        <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
+        <el-dialog :title="dialogTitle" :visible.sync="addChapterVisible" width="40%">
             <el-form ref="chapter" :model="chapter" label-width="70px">
                 <el-form-item label="课程">
-                    <el-link type="primary">{{chapter.courseId}}</el-link>
+                    <el-link type="primary">{{courseName}}</el-link>
                 </el-form-item>
                 <el-form-item label="章节名">
                 <el-input v-model="chapter.name"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="saveSection">确 定</el-button>
+                <el-button @click="addChapterVisible = false">取 消</el-button>
+                <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="saveChapter">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -296,7 +297,7 @@
         //多选，选择的元素
         multipleSelection: [],
         /* 控制弹出框 */
-        editVisible: false,
+        addChapterVisible: false,
         dialogTitle: '',
         chapter: {},
           editSectionVisible: false,
@@ -326,7 +327,12 @@
           nowChapterName : '',
           nowCourseName : '',
           courseId: 0,
+          //是否展示新增大章按钮
+          isShowAddChapter: false,
+          //课程名字
+          courseName:''
       };
+
     },
       created() {
           let courseId = this.$route.params.id;
@@ -334,8 +340,11 @@
              // console.log('courseId=' + courseId);
               this.queryParam.courseId = courseId;
               this.courseId = courseId;
+              //展示新增大章按钮
+              this.isShowAddChapter = true;
           }
           this.list();
+
       },
       mounted() {
 
@@ -575,16 +584,26 @@
             let newChapter = JSON.parse(JSON.stringify(row));
             this.chapter = newChapter;
             // 展示编辑框
-            this.editVisible = true;
+            this.addChapterVisible = true;
         },
 
       /**
        *  点击新增，展示新增框
        */
-      handleAdd() {
+      handleAddChapter() {
           this.dialogTitle = '新增';
           this.chapter = {};
-          this.editVisible = true;
+          this.$axios.get(this.$requestBaseUrl.core + '/admin/courses/'+ this.courseId)
+          .then(resp=>{
+              if(resp.data.success){
+                  this.courseName = resp.data.data.name;
+              }else {
+                  this.$message.warning('获取课程名失败');
+              }
+          }).catch(error=> this.$message.error('获取课程名失败'));
+
+          //展示新增章节弹框
+          this.addChapterVisible = true;
       },
 
       /**
@@ -602,7 +621,8 @@
           //2、参数校验
           // ...
 
-          this.editVisible = false;
+          this.addChapterVisible = false;
+          this.chapter.courseId = this.courseId;
           //3、发请求
           this.$axios.post(this.$requestBaseUrl.core + '/admin/chapters/chapter', this.chapter)
                   .then(res => {
@@ -611,7 +631,7 @@
                           //4、重新加载数据
                           this.list();
                       } else {
-                          this.$message.success('保存失败，请重新试试');
+                          this.$message.warning('保存失败，请重新试试');
                       }
                   }).catch(err => {
               this.$message.error('保存操作发生系统内部错误');
