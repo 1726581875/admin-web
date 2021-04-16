@@ -24,12 +24,7 @@
           v-model="inputVale"
           placeholder="请输入课程名称/教师名称"
           class="handle-input mr10"></el-input>
-        <el-button
-          size="small"
-          icon="el-icon-search"
-          :disabled="buttonStatus.searchButtonDisabled"
-          @click="handleSearch">搜索
-        </el-button>
+
 
         <el-select v-model="selectValue" placeholder="查询条件" class="handle-select mr10"  size="small" @change="list">
           <el-option key="0" label="全部" value="全部"></el-option>
@@ -38,6 +33,13 @@
           <el-option key="3" label="禁用" value="禁用"></el-option>
           <el-option key="4" label="已删除" value="已删除"></el-option>
         </el-select>
+
+        <el-button
+          size="small"
+          icon="el-icon-search"
+          :disabled="buttonStatus.searchButtonDisabled"
+          @click="handleSearch">搜索
+        </el-button>
 
         <el-button
                 icon="el-icon-plus"

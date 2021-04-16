@@ -22,22 +22,25 @@
                 <el-input
                         size="small"
                         v-model="inputVale"
-                        placeholder="请输入角色ID或者名称"
+                        placeholder="请输入昵称或者账号"
                         class="handle-input mr10"></el-input>
+
+                <el-select v-model="selectValue" placeholder="查询条件" class="handle-select mr10"  size="small" @change="list">
+                    <el-option key="0" label="全部" value="全部"></el-option>
+                    <el-option key="1" label="正常" value="正常"></el-option>
+                    <el-option key="2" label="未审核" value="未审核"></el-option>
+                    <el-option key="3" label="禁用" value="禁用"></el-option>
+                    <el-option key="4" label="已删除" value="已删除"></el-option>
+                </el-select>
+
                 <el-button
+                        class="mr10"
                         size="small"
                         icon="el-icon-search"
                         :disabled="buttonStatus.searchButtonDisabled"
                         @click="handleSearch">搜索
                 </el-button>
 
-                <el-button
-                        icon="el-icon-plus"
-                        class="handle-add mr10"
-                        size="small"
-                        @click="handleAdd"
-                >新增
-                </el-button>
             </div>
 
             <div style="background: #fff;">
@@ -69,6 +72,7 @@
                         <el-table-column prop="account" label="登录账号"/>
                         <el-table-column label="状态" width="70px">
                           <template slot-scope="scope">
+                              <el-tag size="small" type="warning" effect="dark" v-if="scope.row.status == 0">未审核</el-tag>
                             <el-tag size="small" type="success" effect="dark" v-if="scope.row.status == 1">正常</el-tag>
                             <el-tag size="small" type="warning" effect="dark" v-else-if="scope.row.status == 2">禁用</el-tag>
                             <el-tag size="small" type="danger" effect="dark" v-else-if="scope.row.status ==3">已删除</el-tag>
@@ -122,28 +126,33 @@
         <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
             <el-form ref="moocUser" :model="moocUser" label-width="70px">
                         <el-form-item label="用户头像">
-                            <el-input v-model="moocUser.userIamge"></el-input>
+                            <img :src="moocUser.imageUrl"/>
                         </el-form-item>
                         <el-form-item label="用户昵称">
-                            <el-input v-model="moocUser.name"></el-input>
+                            <el-input v-model="moocUser.name" disabled></el-input>
                         </el-form-item>
                         <el-form-item label="登录账号">
-                            <el-input v-model="moocUser.account"></el-input>
-                        </el-form-item>
-                        <el-form-item label="登录密码">
-                            <el-input v-model="moocUser.password"></el-input>
+                            <el-input v-model="moocUser.account" disabled></el-input>
                         </el-form-item>
                         <el-form-item label="用户状态">
-                          <el-select v-model="moocUser.status+''" placeholder="用户状态" class="handle-select mr10">
-                            <el-option key="0" label="正常" value="1"></el-option>
-                            <el-option key="1" label="禁用" value="2"></el-option>
-                            <el-option key="2" label="已删除" value="3"></el-option>
-                          </el-select>
+                            <el-tag type="success" effect="dark" v-if="moocUser.statusStr =='正常'">正常</el-tag>
+                            <el-tag type="warning" effect="dark" v-if="moocUser.statusStr =='未审核'">未审核</el-tag>
+                            <el-tag type="danger" effect="dark" v-if="moocUser.statusStr =='禁用'">禁用</el-tag>
+                            <el-tag type="danger" effect="dark" v-if="moocUser.statusStr =='已删除'">已删除</el-tag>
+                          <span>
+                         <el-select size="small" v-model="moocUser.statusStr" placeholder="更改状态" @change="changeSelect"
+                                    class="handle-select mr10" style="margin-left:10px; width: 100px">
+                              <el-option key="0" label="未审核" value="未审核"></el-option>
+                              <el-option key="1" label="正常" value="正常"></el-option>
+                              <el-option key="2" label="禁用" value="禁用"></el-option>
+                              <el-option key="3" label="已删除" value="已删除"></el-option>
+                        </el-select>
+                         </span>
                         </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="save">确 定</el-button>
+                <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="changeUserStatus">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -185,12 +194,59 @@
               searchButtonDisabled: false,
               saveButtonDisabled: false
           },
+
+          //选择框选择的值
+          selectValue: '全部'
       };
     },
       created() {
           this.list();
       },
     methods: {
+
+        /**
+         * 强制刷新选择框（fix:点击选择不生效）
+         */
+        changeSelect(){
+            this.$forceUpdate()
+        },
+        /**
+         * 更改用户状态
+         */
+        changeUserStatus(){
+
+            //1、判断更改的类型
+            if(this.moocUser.statusStr == '未审核'){
+                this.moocUser.status = 0;
+            }else if(this.moocUser.statusStr == '正常'){
+                this.moocUser.status = 1;
+            }else if(this.moocUser.statusStr == '禁用'){
+                this.moocUser.status = 2;
+            }else if(this.moocUser.statusStr == '已删除'){
+                this.moocUser.status = 3;
+            }else {
+                this.moocUser.status = null;
+            }
+            //2、隐藏修改框
+            this.editVisible = false;
+            //3、发请求更改状态
+            this.$axios.put(this.$requestBaseUrl.core + '/admin/moocUsers/' + this.moocUser.id, this.moocUser)
+                .then(res => {
+                    if (res.data.success) {
+                        this.$message.success('保存成功');
+                        //4、重新加载数据
+                        this.list();
+                    } else {
+                        this.$message.warning('保存失败，请重新试试');
+                    }
+                }).catch(err => {
+                this.$message.error('保存操作发生系统内部错误');
+                console.error("error = " + err)
+            });
+
+          console.log('更改用户状态为' + this.moocUser.statusStr);
+
+        },
 
       //初始化查询条件
       resetQueryParam() {
@@ -224,6 +280,20 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
+
+          //根据选择类型查询
+          if(this.selectValue == '未审核'){
+              this.queryParam.status = 0;
+          }else if(this.selectValue == '正常'){
+              this.queryParam.status = 1;
+          }else if(this.selectValue == '禁用'){
+              this.queryParam.status = 2;
+          }else if(this.selectValue == '已删除'){
+              this.queryParam.status = 3;
+          }else {
+              this.queryParam.status = null;
+          }
+        //设置查询类型为教师
         this.queryParam.userType = '教师';
         this.$axios.get(this.$requestBaseUrl.core + '/admin/moocUsers/list', {
           params: this.queryParam
@@ -266,10 +336,10 @@
         // 自己定义，参数校验
         // ...
 
-          //如果不是数字就是根据名字查询，如果是数字根据id查
-        let queryColumn = isNaN(inputValue) ? 'name' : 'id';
+        //根据名字/账号查询
         this.resetQueryParam();
-        this.$set(this.queryParam, queryColumn, inputValue);
+        this.$set(this.queryParam,  'name', inputValue);
+        this.$set(this.queryParam,  'account', inputValue);
         this.list();
       },
 
@@ -382,6 +452,19 @@
             //为对象分配一个新地址，改变也不影响原来的值
             let newMoocUser = JSON.parse(JSON.stringify(row));
             this.moocUser = newMoocUser;
+            //状态
+            let status = newMoocUser.status;
+            if(status == 0){
+                this.moocUser.statusStr = '未审核';
+            }else if(status == 1){
+                this.moocUser.statusStr = '正常';
+            }else if(status == 2){
+                this.moocUser.statusStr = '禁用';
+            }else if(status == 3){
+                this.moocUser.statusStr = '已删除';
+            }else {
+                this.moocUser.statusStr = '未知状态';
+            }
             // 展示编辑框
             this.editVisible = true;
         },
@@ -412,7 +495,7 @@
 
           this.editVisible = false;
           //3、发请求
-          this.$axios.post('http://localhost:9001/admin/moocUsers/moocUser', this.moocUser)
+          this.$axios.post(this.$requestBaseUrl.core + '/admin/moocUsers/moocUser', this.moocUser)
                   .then(res => {
                       if (res.data.success) {
                           this.$message.success('保存成功');
