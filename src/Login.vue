@@ -1,8 +1,8 @@
 <template>
   <div style="width: 100%;height: 700px">
-  <div class="login-wrap">
+  <div class="login-wrap" :style="{backgroundImage: 'url(' + bgImage + ')' }">
     <div class="ms-login">
-      <div class="ms-title">MOOC后台管理系统</div>
+      <div class="ms-title">{{systemName}}</div>
       <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
         <el-form-item prop="username">
           <el-input v-model="param.username" placeholder="username">
@@ -30,7 +30,7 @@
         <div class="login-btn">
           <el-button type="primary" @click="submitForm()">登录</el-button>
         </div>
-        <p class="login-tips">Tips : 如果忘记密码请联系管理员</p>
+        <p class="login-tips">Tips : 如果忘记密码请联系管理员QQ1726581875</p>
       </el-form>
     </div>
   </div>
@@ -38,11 +38,15 @@
 </template>
 
 <script>
-
+  import defaultImage from '@/assets/bg.jpg'
   import { encrypt } from '@/utils/rsaEncrypt'
   export default {
     data: function() {
       return {
+        //登录背景图
+        bgImage: defaultImage,
+        //系统名
+        systemName: 'MOOC后台管理系统',
         param: {
           username: 'admin',
           password: 'root',
@@ -56,6 +60,10 @@
         vcUrl: this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date().getTime(),
 
       };
+    },
+    created() {
+      //加载logo
+      this.setSystemName();
     },
     methods: {
       submitForm() {
@@ -107,7 +115,51 @@
       updateVerificationCode() {
         this.vcUrl = this.$requestBaseUrl.authorize+'/mooc/admin/code/image?time='+new Date().getTime();
       },
+      /**
+       * 获取系统名/系统logo
+       */
+      setSystemName(){
+        this.$axios.get(this.$requestBaseUrl.core + '/admin/logo/loginLogo')
+          .then(res => {
+            if (res.data.success) {
 
+              let data = res.data.data
+              // 设置系统名
+              this.systemName = data.systemName;
+
+              //设置背景图
+              this.bgImage = this.$requestBaseUrl.core + data.loginLogoPath + '?time=' + new Date().getTime();
+              // 设置浏览器头部favicon、title
+              let link =
+                document.querySelector("link[rel*='icon']") ||
+                document.createElement('link')
+              link.type = 'image/x-icon'
+              link.rel = 'shortcut icon'
+              link.href =
+                data.faviconPath !== ''
+                  ? this.$requestBaseUrl.core +
+                  data.faviconPath +
+                  '?time=' +
+                  new Date().getTime()
+                  : '../static/favicon.png'
+              document.getElementsByTagName('head')[0].appendChild(link)
+              document.title =
+                data.systemName !== '' ? data.systemName : 'mooc|慕课后台管理系统'
+            }else {
+              let link =
+                document.querySelector("link[rel*='icon']") ||
+                document.createElement('link')
+              link.type = 'image/x-icon'
+              link.rel = 'icon'
+              link.href = '../static/favicon.png'
+              document.getElementsByTagName('head')[0].appendChild(link)
+              document.title = 'mooc|慕课后台管理系统'
+            }
+          })
+          .catch(err => {
+            console.log('获取logo发生异常,err=' + err)
+          });
+      },
     },
   };
 </script>
@@ -117,7 +169,6 @@
     position: relative;
     width: 100%;
     height: 100%;
-    background-image: url(./assets/bg.jpg);
     background-size: 100%;
   }
   .ms-title {

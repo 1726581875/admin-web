@@ -285,7 +285,7 @@
                 // 指定图表的配置项和数据
                 let courseOption = {
                     title: {
-                        text: '近一周新增课程',
+                        text: '近一月新增课程',
                         textStyle:{
                             //文字颜色
                             color:'#000',
@@ -465,16 +465,28 @@
                           //记录最大值，作为y轴长度划分
                           let maxValue = 1;
 
+                          let maxCount = this.collectionAndViewMax;
                           //遍历赋值
                           collectionCountList.forEach(item=>{
                               countDate.push(item.date);
                               collectionCount.push(item.count);
+                              //找出最大数，设置图表的y轴
+                              if(item.count > maxCount){
+                                  maxCount = item.count;
+                              }
                           });
-                          viewCountList.forEach(item=> viewCount.push(item.count));
+                          viewCountList.forEach(item=> {
+                              viewCount.push(item.count);
+                              //找出最大数，设置图表的y轴
+                              if(item.count > maxCount){
+                                  maxCount = item.count;
+                              }
+                          });
                           //赋值给渲染对象
                           this.courseCount.countDate = countDate;
                           this.courseCount.collectionCount = collectionCount;
                           this.courseCount.viewCount = viewCount;
+                          this.collectionAndViewMax = maxCount + 1;
                           // 重新加载图表
                           this.initCourseCollectionAndViewChart();
                       }else {

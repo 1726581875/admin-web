@@ -126,7 +126,7 @@
         <el-dialog :title="dialogTitle" :visible.sync="editVisible" width="40%">
             <el-form ref="moocUser" :model="moocUser" label-width="70px">
                         <el-form-item label="用户头像">
-                            <img :src="moocUser.imageUrl"/>
+                            <img :src="moocUser.imageUrl" width="25%" height="100px"/>
                         </el-form-item>
                         <el-form-item label="用户昵称">
                             <el-input v-model="moocUser.name" disabled></el-input>

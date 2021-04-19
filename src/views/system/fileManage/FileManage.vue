@@ -133,7 +133,7 @@
                         <el-form-item label="文件后缀">
                             <el-input v-model="moocFile.fileSuffix"></el-input>
                         </el-form-item>
-                        <el-form-item label="文件唯一标识">
+                        <el-form-item label="fileKey">
                             <el-input v-model="moocFile.fileKey"></el-input>
                         </el-form-item>
                         <el-form-item label="文件类型">
@@ -155,14 +155,15 @@
                             <el-input v-model="moocFile.courseId"></el-input>
                         </el-form-item>
                         <el-form-item label="文件状态">
-                            <el-input v-model="moocFile.status"></el-input>
+                          <el-tag size="small" type="success" effect="dark" v-if="moocFile.status ==1">正常</el-tag>
+                          <el-tag size="small" type="warning" effect="dark" v-else>已删除</el-tag>
                         </el-form-item>
                         <el-form-item label="创建时间">
                             <el-input v-model="moocFile.createTime"></el-input>
                         </el-form-item>
-                        <el-form-item label="修改时间">
+<!--                        <el-form-item label="修改时间">
                             <el-input v-model="moocFile.updateTime"></el-input>
-                        </el-form-item>
+                        </el-form-item>-->
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -287,7 +288,7 @@
             this.$message.error(result.msg);
           }
         }).catch(err => {
-          this.$message.error('发生系统内部错误');
+          this.$message.error('发生错误');
           console.error("error = " + err)
         });
       },

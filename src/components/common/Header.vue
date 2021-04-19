@@ -320,7 +320,7 @@ export default {
                     }
                 })
                 .catch(err => {
-
+                       console.log('获取logo发生异常,err=' + err)
                 });
         },
         /**
