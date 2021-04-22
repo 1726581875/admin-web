@@ -34,6 +34,9 @@ axios.defaults.withCredentials = true
 import * as echarts from 'echarts'
 Vue.prototype.$echarts = echarts;
 
+//引入消息提示框
+import { Message } from 'element-ui';
+
 // 拦截器在请求头部设置token
 axios.interceptors.request.use(function (config) {
   let token = window.localStorage.getItem("token");
@@ -52,10 +55,9 @@ axios.interceptors.response.use(function (response) {
 }, async function (error) {
   // 1. 如果没有refresh_token,则直接跳转登录页
   if (error.response && error.response.status === 401) {
-     // this.$message.warning("token失效");
+      Message.warning('token失效')
       router.push('/login');
-      //return error.response;
-    return ;
+    return;
   }
   return Promise.reject(error)
 });

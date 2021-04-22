@@ -3,9 +3,9 @@
     <div class="container">
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="登录日志" name="first"></el-tab-pane>
-          <el-tab-pane label="操作日志" name="second"></el-tab-pane>
+<!--          <el-tab-pane label="操作日志" name="second"></el-tab-pane>
           <el-tab-pane label="异常日志" name="third"></el-tab-pane>
-          <el-tab-pane label="xxx日志" name="fourth"></el-tab-pane>
+          <el-tab-pane label="xxx日志" name="fourth"></el-tab-pane>-->
         </el-tabs>
 
       <!--  操作按钮、输入框、    -->
@@ -56,7 +56,7 @@
           icon="el-icon-download"
           class="handle-add float-right"
           size="small"
-          @click="handleAdd"
+          @click="handleLoginLogExport"
         >导出
         </el-button>
       </div>
@@ -146,6 +146,15 @@
       this.list();
     },
     methods: {
+      /**
+       * 导出登录日志
+       */
+      handleLoginLogExport(){
+        let a = document.createElement('a')
+        // 这里的请求方式为get，如果需要认证，接口上需要带上token
+        a.href = this.$requestBaseUrl.core + `/admin/loginLogs/export?`+ this.$qs.stringify(this.queryParam);
+        a.click()
+      },
 
       /**
        * 切换日志类型
@@ -237,9 +246,11 @@
           if (result.success) {
             this.loginLogList = result.data.content;
             this.pageCount = result.data.pageCount;
+          }else {
+            this.$message.warning('加载登录日志发生异常');
           }
         }).catch(err => {
-          this.$message.error('加载在线用户发生异常');
+          this.$message.error('加载登录日志发生异常');
           console.error("error = " + err)
         });
       },

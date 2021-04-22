@@ -42,14 +42,14 @@
                   icon="el-icon-upload2"
                   class="handle-add float-right"
                   size="small"
-                  @click="handleAdd"
+                  @click="handleImport"
                 >导入
                 </el-button>
               <el-button
                 icon="el-icon-download"
                 class="handle-add float-right"
                 size="small"
-                @click="handleAdd"
+                @click="handleLoginLogExport"
               >导出
               </el-button>
             </div>
@@ -126,6 +126,31 @@
                 <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="save">确 定</el-button>
             </span>
         </el-dialog>
+
+        <!-- 导入 弹出框   -->
+        <el-dialog title="导入" :visible.sync="importVisible" width="40%">
+            <el-form ref="ipBlacklist"  label-width="70px">
+                <el-form-item label="选择文件">
+                    <el-upload
+                      class="upload-demo"
+                      ref="upload"
+                      action="https://jsonplaceholder.typicode.com/posts/"
+                      :before-upload="beforeUpload"
+                      :on-remove="handleRemove"
+                      :http-request="upload"
+                      :file-list="fileList"
+                      :auto-upload="false">
+                        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传xsl/xslx文件，且不超过大小5M</div>
+                    </el-upload>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="importVisible = false">取 消</el-button>
+                <el-button type="primary" :disabled="buttonStatus.saveButtonDisabled" @click="importVisible = false ">确定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -149,6 +174,7 @@
         multipleSelection: [],
         /* 控制弹出框 */
         editVisible: false,
+        importVisible: false,
         dialogTitle: '',
         ipBlacklist: {},
         //刷新 转动
@@ -161,12 +187,47 @@
               searchButtonDisabled: false,
               saveButtonDisabled: false
           },
+          //文件列表
+          fileList: [],
       };
     },
       created() {
           this.list();
       },
     methods: {
+        /**
+         * 上传文件
+         *
+         */
+        upload(item) {
+            let formData = new FormData();
+            formData.append('file',item.file)
+           this.$axios.post(this.$requestBaseUrl.core + '/admin/ipBlacklists/import',formData)
+            .then(resp=>{
+                if(resp.data.success){
+                    this.$message.success('导入IP禁用列表成功')
+                }else {
+                    this.$message.warning('导入IP禁用列表失败')
+                }
+            }).catch(err=>{
+               this.$message.error('导入IP禁用列表失败')
+           })
+        },
+        /**
+         *  点击删除按钮触发
+         */
+        handleImport() {
+            this.importVisible = true;
+        },
+        /**
+         * 导出ip黑名单
+         */
+        handleLoginLogExport(){
+            let a = document.createElement('a')
+            // 这里的请求方式为get，如果需要认证，接口上需要带上token
+            a.href = this.$requestBaseUrl.core + `/admin/ipBlacklists/export`;
+            a.click()
+        },
 
       //初始化查询条件
       resetQueryParam() {
@@ -404,7 +465,27 @@
         console.log("val = " + val)
         this.$set(this.queryParam, 'pageIndex', val);
         this.list();
-      }
+      },
+
+        submitUpload() {
+            this.$refs.upload.submit();
+        },
+        handleRemove(file, fileList) {
+            console.log(file, fileList);
+        },
+        beforeUpload(file) {
+            const isLt5M = file.size / 1024 / 1024 < 5
+
+            const isType = file.type === 'image/jpeg' || file.type === 'image/png'
+            if (!isType) {
+                this.$message.warning('只能上传xsl/xslx文件');
+                return false
+            }
+            if (!isLt5M) {
+                this.$message.warning('文件大小不能超过 5M!');
+                return false
+            }
+        }
     }
   };
 </script>

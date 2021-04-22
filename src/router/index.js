@@ -60,11 +60,11 @@ const routes = [
                 meta: { title: '分类管理' }
             },{
                 path: '/user',
-                component: () => import('../views/system/user/MoocUser.vue'),
+                component: () => import('../views/system/user/User'),
                 meta: { title: '普通用户管理' }
             },{
                 path: '/teacher',
-                component: () => import('../views/system/user/Teacher.vue'),
+                component: () => import('../views/system/user/Teacher'),
                 meta: { title: '教师管理' }
             },{
                 path: '/file',

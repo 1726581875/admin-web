@@ -287,7 +287,7 @@
        * 点击禁用/启用
        */
       handleEnable(enable, id, isUpdate) {
-        let status = enable ? 1 : 0;
+        let status = enable ? 1 : 2;
         if (isUpdate) {
           this.$axios.post('http://localhost:9001/admin/moocManagers/'+id+'/status/'+status)
             .then(resp => {

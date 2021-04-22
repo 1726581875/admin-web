@@ -160,7 +160,7 @@
 
 <script>
   export default {
-    name: 'teacher',
+    name: 'user',
     data() {
       return {
         /* 分页查询条件 */
@@ -294,7 +294,7 @@
               this.queryParam.status = null;
           }
         //设置查询类型为教师
-        this.queryParam.userType = '教师';
+        this.queryParam.userType = '普通用户';
         this.$axios.get(this.$requestBaseUrl.core + '/admin/moocUsers/list', {
           params: this.queryParam
         }).then(res => {
