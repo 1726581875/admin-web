@@ -295,19 +295,31 @@
       },
 
       /**
-       *  点击下线按钮触发该方法
+       *  点击删除按钮触发
        */
-      handleDelete(index, account) {
-        let name = this.courseList[index].name;
-        // 弹框，二次确认下线
-        this.$confirm(`确定要删除课程 <span style="color: red">${name}</span> 吗`, '提示', {
-          type: 'warning',
-          dangerouslyUseHTMLString: true
+      handleDelete(index, id) {
+        // 弹框，二次确认删除
+        this.$confirm('确定要删除吗？', '提示', {
+          type: 'warning'
         }).then(() => { // 点击确认删除
-          this.offlineUserByAccount(account);
+          this.deleteById(id);
         }).catch(() => {// 点击取消
           console.log("已取消");
         });
+      },
+
+      /**
+       * 根据id删除
+       */
+      deleteById(id){
+        this.$axios.delete("http://localhost:9001/admin/courses/" + id)
+          .then(res => {
+            res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
+            this.list();
+          }).catch(err => {
+          this.$message.error('删除操作发生系统内部错误');
+          console.error("error = " + err)
+        })
       },
 
       /**
@@ -353,60 +365,66 @@
 
       /**
        * 说明：点击批量删除按钮时触发
+       *  批量删除,删除已经选择的
+       * 1、获取到要删除的courseId数组
+       * 2、弹出框，提示信息，二次确认
+       * 3、发ajax，批量删除
        */
       deleteSelected() {
         // 防刷
-        this.buttonStatus.offlineMultipleButtonDisabled = true;
-        setTimeout(() => this.buttonStatus.offlineMultipleButtonDisabled = false, 1000);
+        this.buttonStatus.searchButtonDisabled = true;
+        setTimeout(() => this.buttonStatus.searchButtonDisabled = false, 1000);
         //参数检测
         if (this.multipleSelection.length == 0) {
-          this.$message.warning("你还没有选择任何人");
+          this.$message.warning("你还没有选择任何元素！");
           return;
         }
 
-        // 1、获取到要删除的数组
-        const accountList = [];
+        // 1、获取到要删除的course id数组
+        const courseIdList = [];
         // 名字 list
-        let delUserNames = [];
-        this.multipleSelection.forEach((user, index) => {
-          // 拿到要删除的account
-          accountList.push(user.account);
+        let delCourseNames = [];
+        this.multipleSelection.forEach((course, index) => {
+          // 拿到要删除的courseId
+          courseIdList.push(course.id);
           // 取前五个名字
           if (index <= 5) {
-            delUserNames.push(user.name);
+            delCourseNames.push(course.name);
           }
         });
-        let delCount = accountList.length;
-        // 批量下线的名字拼接 String
-        let delMsgStr = delCount <= 5 ? delUserNames.toString() : delUserNames.toString() + '...';
+        let delCount = courseIdList.length;
+        // 批量删除的名字拼接 String
+        let delMsgStr = delCount <= 5 ? delCourseNames.toString() : delCourseNames.toString() + '...';
 
         //2、弹出框，提示信息,二次确认
-        this.$confirm(`确定要批量下线 [<span style="color: red">${delMsgStr}</span>] 一共
-         <span style="color: red">${accountList.length}</span> 列吗?`, '提示', {
+        this.$confirm(`确定要批量删除 [<span style="color: red">${delMsgStr}</span>] 一共
+         <span style="color: red">${courseIdList.length}</span> 列吗?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning',
           dangerouslyUseHTMLString: true
         }).then(() => {//当点击确认
 
-          //3、发送批量下线请求
-          this.$axios.post(this.$requestBaseUrl.authorize + "/onlineUser/offline/list", accountList)
+          //3、发送批量删除请求
+          this.$axios.post("http://localhost:9001/admin/courses/batch/delete", courseIdList)
             .then(res => {
-              res.data.success ? this.$message.success(`下线了 ${delMsgStr}`) : this.$message.error('批量下线用户失败，请刷新后重新试试');
+              res.data.success ? this.$message.success(`删除了 ${delMsgStr}`) : this.$message.error('批量删除失败，请刷新后重新试试');
               //延迟一秒执行
               setTimeout(() => this.list(), 1000);
             })
             .catch(err => {
-              this.$message.error('批量下线用户发生异常');
+              this.$message.error('批量删除操作发生错误');
               console.error("error = " + err)
             })
 
         }).catch(() => {//当点击取消
-          console.log('批量下线用户已取消');
+          console.log('批量删除已取消');
         });
 
         this.multipleSelection = [];
       },
+
+
       // 分页导航
       handlePageChange(val) {
         console.log("val = " + val)
