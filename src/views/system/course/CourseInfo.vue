@@ -78,7 +78,7 @@
           <el-table-column prop="name" label="课程名称"/>
           <el-table-column prop="teacherName" label="讲师名字"/>
           <el-table-column prop="durationFormat" label="时长" width="80"/>
-          <el-table-column prop="learningNum" label="学习人数" width="80"/>
+          <!--<el-table-column prop="learningNum" label="学习人数" width="80"/>-->
           <el-table-column label="状态">
             <template slot-scope="scope">
               <el-tag size="small" type="success" effect="dark" v-if="scope.row.status =='正常'">正常</el-tag>
