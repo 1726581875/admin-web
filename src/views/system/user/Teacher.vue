@@ -294,7 +294,7 @@
               this.queryParam.status = null;
           }
         //设置查询类型为教师
-        this.queryParam.userType = '教师';
+        this.queryParam.userType = 'TEACHER';
         this.$axios.get(this.$requestBaseUrl.core + '/admin/moocUsers/list', {
           params: this.queryParam
         }).then(res => {

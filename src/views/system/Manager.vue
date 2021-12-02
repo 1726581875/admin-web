@@ -251,7 +251,7 @@
         // 展示角色选择框
         this.showRole = true;
         // 发请求获取全部角色列表
-        this.$axios.get('http://localhost:9001/admin/roles/all')
+        this.$axios.get(this.$requestBaseUrl.authorize + '/roles/all')
           .then(resp => {
             let respData = resp.data;
             if (respData.success) {
@@ -289,7 +289,7 @@
       handleEnable(enable, id, isUpdate) {
         let status = enable ? 1 : 2;
         if (isUpdate) {
-          this.$axios.post('http://localhost:9001/admin/moocManagers/'+id+'/status/'+status)
+          this.$axios.post(this.$requestBaseUrl.authorize + '/manager/'+id+'/status/'+status)
             .then(resp => {
               if (resp.data.success) {
                 console.log(resp.data.success);
@@ -333,7 +333,7 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/moocManagers/list', {
+        this.$axios.get(this.$requestBaseUrl.authorize + '/manager/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;
@@ -395,7 +395,7 @@
        * 根据id删除
        */
       deleteById(id) {
-        this.$axios.delete("http://localhost:9001/admin/moocManagers/" + id)
+        this.$axios.delete(this.$requestBaseUrl.authorize + "/manager/" + id)
           .then(res => {
             res.data.success ? this.$message.success('删除成功') : this.$message.error('删除失败，请刷新后重新试试');
             this.list();
@@ -455,7 +455,7 @@
         }).then(() => {//当点击确认
 
           //3、发送批量删除请求
-          this.$axios.post("http://localhost:9001/admin/moocManagers/batch/delete", moocManagerIdList)
+          this.$axios.post(this.$requestBaseUrl.authorize + "/manager/batch/delete", moocManagerIdList)
             .then(res => {
               res.data.success ? this.$message.success(`删除了 ${delMsgStr}`) : this.$message.error('批量删除失败，请刷新后重新试试');
               //延迟一秒执行
@@ -546,7 +546,7 @@
           paramManager.password = encrypt(password);
         }
         //3、发请求
-        this.$axios.post('http://localhost:9001/admin/moocManagers/moocManager', paramManager)
+        this.$axios.post(this.$requestBaseUrl.authorize + '/manager/moocManager', paramManager)
           .then(res => {
             if (res.data.success) {
               this.$message.success('保存成功');

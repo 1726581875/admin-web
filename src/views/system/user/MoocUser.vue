@@ -225,7 +225,7 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.queryParam.userType = '普通用户';
+        this.queryParam.userType = 'USER';
         this.$axios.get(this.$requestBaseUrl.core + '/admin/moocUsers/list', {
           params: this.queryParam
         }).then(res => {
