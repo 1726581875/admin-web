@@ -251,7 +251,7 @@
         // 展示角色选择框
         this.showRole = true;
         // 发请求获取全部角色列表
-        this.$axios.get(this.$requestBaseUrl.authorize + '/roles/all')
+        this.$axios.get(this.$requestBaseUrl.authorize + '/admin/roles/all')
           .then(resp => {
             let respData = resp.data;
             if (respData.success) {
@@ -484,7 +484,20 @@
         //为对象分配一个新地址，改变也不影响原来的值
         let newMoocManager = JSON.parse(JSON.stringify(row));
         this.moocManager = newMoocManager;
-        this.roles = newMoocManager.roleList;
+
+        //获取当前管理员角色列表
+        this.$axios.get(this.$requestBaseUrl.authorize + '/admin/roles/manager/' + newMoocManager.id)
+                .then(res => {
+                  if (res.data.success) {
+                    this.roles = res.data.data;
+                  } else {
+                    this.$message.info(res.data.msg);
+                  }
+                }).catch(err => {
+          this.$message.error('获取管理员角色列表发生系统内部异常');
+          console.error("error = " + err)
+        })
+
         // 展示编辑框
         this.editVisible = true;
       },

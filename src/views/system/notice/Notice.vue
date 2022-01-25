@@ -6,18 +6,17 @@
                     <el-table :data="messageList" :show-header="false" style="width: 100%">
                         <el-table-column>
                             <template slot-scope="scope">
-                                <!-- 新增课程通知只有课程Id -->
-                                <div v-if="scope.row.flag == 1">
+                                <!-- 消息类型,1新增课程，2课程提问，3评论回复，4、系统通知, 5已回复, 6下线通知 -->
+                                <div v-if="scope.row.type == 1">
                                     <a @click="toCourseList"><span class="message-title">{{scope.row.content}}</span></a>
                                 </div>
-                                <!-- 新增课程通知只有课程Id -->
-                                <div v-if="scope.row.flag == 2">
+                                <div v-if="scope.row.type == 2">
                                     <span class="mes sage-title">{{scope.row.content}}</span>
                                 </div>
-                                <div v-if="scope.row.flag == 3">
+                                <div v-if="scope.row.type == 3">
                                     <span class="mes sage-title">{{scope.row.content}}</span>
                                 </div>
-                                <dev v-if="scope.row.flag == 4">
+                                <dev v-if="scope.row.type == 4">
                                     <span class="mes sage-title">{{scope.row.content}}</span>
                                 </dev>
                             </template>
@@ -25,9 +24,9 @@
                         <el-table-column prop="createTime" width="180"></el-table-column>
                         <el-table-column width="200">
                             <template slot-scope="scope">
-                                <el-button size="mini" v-if="scope.row.flag == 1" @click="toCourseList" >查看</el-button>
-                                <el-button size="mini" v-if="scope.row.flag == 2" @click="handleReply(scope.row)" >回复</el-button>
-                                <el-button size="mini" v-if="scope.row.flag == 3" @click="handleReply(scope.row)" >回复</el-button>
+                                <el-button size="mini" v-if="scope.row.type == 1" @click="toCourseList" >查看</el-button>
+                                <el-button size="mini" v-if="scope.row.type == 2" @click="handleReply(scope.row)" >回复</el-button>
+                                <el-button size="mini" v-if="scope.row.type == 3" @click="handleReply(scope.row)" >回复</el-button>
                                 <el-button size="mini" @click="handleRead(scope.row.id)">标为已读</el-button>
                             </template>
                         </el-table-column>

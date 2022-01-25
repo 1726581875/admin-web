@@ -19,7 +19,10 @@
             <el-button slot="prepend" icon="el-icon-lock"></el-button>
           </el-input>
         </el-form-item>
-
+        <el-form-item>
+          <el-radio v-model="param.type" label="TEACHER">教师</el-radio>
+          <el-radio v-model="param.type" label="MANAGER">管理员</el-radio>
+        </el-form-item>
         <el-form-item prop="code">
           <el-input v-model="param.code" placeholder="code">
             <el-button slot="prepend" icon="el-icon-picture-outline"></el-button>
@@ -50,6 +53,7 @@
         param: {
           username: 'admin',
           password: 'root',
+          type: 'MANAGER',
           code:''
         },
         rules: {
