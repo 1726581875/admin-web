@@ -38,10 +38,7 @@
             <el-table
                     :data="chapterList"
                     class="table"
-                    size="mini"
-                    height="437px"
-                    :row-style="{height:'12px'}"
-                    :cell-style="{padding:'3px 1px'}"
+                    size="small"
                     row-key="id"
                     header-cell-class-name="table-header"
                     @expand-change="expandChapter"
@@ -487,7 +484,7 @@
        * 2、ajax请求分页接口获取数据
        */
       list() {
-        this.$axios.get('http://localhost:9001/admin/chapters/list', {
+        this.$axios.get(this.$requestBaseUrl.core + '/admin/chapters/list', {
           params: this.queryParam
         }).then(res => {
           let result = res.data;

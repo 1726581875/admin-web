@@ -37,7 +37,7 @@ a {
     width: auto;
     height: 100%;
     padding: 0px;
-   /** overflow-y: scroll; */
+    overflow-y: scroll;
     box-sizing: border-box;
 }
 
@@ -50,7 +50,8 @@ a {
     background: #E4E7ED;
     border: 1px solid #ddd;
     border-radius: 5px;
-    height: 610px;
+    height: 710px;
+    /** height: auto; */
 }
 
 .crumbs {

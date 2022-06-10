@@ -56,10 +56,7 @@
           :data="courseList"
           border
           class="table"
-          size="mini"
-          height="437px"
-          :row-style="{height:'12px'}"
-          :cell-style="{padding:'3px 1px'}"
+          size="small"
           ref="multipleTable"
           header-cell-class-name="table-header"
           :default-sort="{prop: 'date', order: 'descending'}"
